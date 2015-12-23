@@ -1,0 +1,142 @@
+<script>
+    function AcronisCtrl_action_change(item) {  
+        if ($(item).val() === 'install') {
+            $('.install').show();
+            ProtectCtrl_activate_change($('#node-input-activate'));
+        }
+        else if ($(item).val() === 'activate') {
+            $('.install').hide();
+            $('.activate').show();
+        }
+        else {
+            $('.install').hide();
+            $('.activate').hide();
+        }
+    }
+
+    function AcronisCtrl_activate_change(item) {
+        if ($(item).val() === 'True') {
+            $('.activate').show();
+        }
+        else {
+            $('.activate').hide();
+        }
+    }
+
+    function AcronisCtrl_Option()
+    {
+        /*AcronisCtrl_action_change($('#node-input-action'));
+        if ($('#node-input-action').val() === 'activate')
+            $('.activate').show();*/
+        $('#node-input-action').change(function () {
+            AcronisCtrl_action_change($(this));
+        });
+
+        $('#node-input-activate').change(function () {
+            AcronisCtrl_activate_change($(this));
+        });
+    }
+
+
+</script>
+<script type="text/javascript">
+    RED.nodes.registerType('AcronisCtrl', {
+        category: 'RMM31_DeviceCtrl',
+        color: 'rgb(157, 161, 195)',
+        defaults: {            
+            deviceid: {value: ""},
+            action: {value: "install"},
+            activate: {value: "False"},
+            company: {value: ""},
+            sn: {value: ""},
+            asz: {value: "50"}
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "white-globe.png",
+        label: function () {
+            return this.name || "AcronisCtrl";
+        },
+        oneditprepare: function () {
+            $('#node-input-name').val(this.name);            
+            /*$('#node-sa-input-deviceid').val(this.deviceid);
+            $('#node-sa-input-action').val(this.action);
+            $('#node-sa-input-activate').val(this.activate);
+            $('#node-sa-input-company').val(this.company);
+            $('#node-sa-input-sn').val(this.sn);
+            $('#node-sa-input-asz').val(this.asz);*/
+            AcronisCtrl_Option();
+        },
+        oneditsave: function () {
+            this.name = $('#node-input-name').val();            
+            /*this.deviceid = $('#node-sa-input-deviceid').val();
+            this.action = $('#node-sa-input-action').val();
+            this.activate = $('#node-sa-input-activate').val();
+            this.company = $('#node-sa-input-company').val();
+            this.sn = $('#node-sa-input-sn').val();
+            this.asz = $('#node-sa-input-asz').val();*/
+            /*if(this.action === 'protect' || this.action === 'unprotect')
+             this.activate = 'False';*/
+            if ($('.install').css("display") === 'none')
+            {
+                this.activate = 'False';
+                this.asz = '50';
+            }
+            if ($('.activate').css("display") === 'none') {
+                this.company = "";
+                this.sn = "";
+            }
+            
+            if($('#node-input-action').val() === 'backup' || $('#node-input-action').val() === 'recovery'){
+                $('#node-input-activate').val('False');
+            }
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="AcronisCtrl">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Node Name">
+    </div>    
+    <div class="form-row">
+        <label for="node-input-deviceid"><i class="fa fa-sign-in"></i> Device ID</label>
+        <input type="text" id="node-input-deviceid" placeholder="Device ID">
+    </div>
+    <div class="form-row">
+    <label for="node-input-action"><i class="fa fa-tasks"></i> Method</label>
+    <select type="text" id="node-input-action" style="width:72%;">
+        <option value="install">Install</option>
+        <option value="activate">Activate</option>
+        <option value="backup">Backup</option>
+        <option value="recovery">Recovery</option>
+    </select>
+    </div>
+    <div class="form-row install">
+    <label for="node-input-asz"><i class="fa fa-tasks"></i> Activate</label>
+    <input type="number" id="node-input-asz" placeholder="ASZ" style="width:50%;">
+    <span>%</span>
+    </div>
+    <div class="form-row install">
+    <label for="node-input-activate"><i class="fa fa-tasks"></i> Activate</label>
+    <select type="text" id="node-input-activate" style="width:72%;">
+        <option value="True">True</option>
+        <option value="False">False</option>
+    </select>
+    </div>
+    <div class="form-row activate">
+        <label for="node-input-company"><i class="fa fa-user"></i> Company</label>
+        <input type="text" id="node-input-company" placeholder="Company Name">
+    </div>
+    <div class="form-row activate">
+        <label for="node-input-sn"><i class="fa fa-tasks"></i> SN</label>
+        <input type="text" id="node-input-sn" placeholder="Serial Number">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="AcronisCtrl">
+    <p>Set device to install/update Acronis, backup, recovery, activate.</p>
+    <p>User set the server ip (<code>msg.url</code>), port (<code>msg.port</code>), username (<code>msg.username</code>) and password (<code>msg.pwd</code>).</p>
+    <p>User can set the device id, Acronis action, activate, company, serial number and ASZ under this node or set <code>msg.deviceid</code>, <code>msg.action</code>, <code>msg.activate</code>, <code>msg.company</code>, <code>msg.sn</code>, <code>msg.asz</code>. </p>
+    <p>If you set <code>msg.deviceid</code>, <code>msg.action</code>, <code>msg.activate</code>, <code>msg.company</code>, <code>msg.sn</code>, <code>msg.asz</code>, the setting of this node will be override. </p>
+</script>

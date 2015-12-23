@@ -1,0 +1,167 @@
+<script type="text/x-red" data-template-name="credential">
+    <div class="form-row" id="node-config-susiaccess-row"></div>
+    <input type="hidden" id="node-config-input-susiaccess_name">
+</script>
+<script type="text/javascript">
+    var susiaccessConfigNodeId = null;
+    var susiaccessConfigNodeIntervalId = null;
+    RED.nodes.registerType('credential', {
+        category: 'config',
+        color: 'rgb(230, 161, 5)',
+        defaults: {
+            susiaccess_name: {value:""}
+        },
+        credentials: {
+            susiaccess_name: {type:"text"},
+            token: {type: "text"},
+            code: {type: "text"}
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "accel.png",
+        label: function () {
+            return this.susiaccess_name;
+        },
+        oneditprepare: function () {   
+            function showSUSIAccessAuthStart(node) {
+                susiaccessConfigNodeId = node.id;   
+                var callback = location.protocol+"//"+location.hostname+":"+location.port+"/susiaccess-credentials/" + susiaccessConfigNodeId + "/auth/callback";
+                $("#node-config-dialog-ok").button("disable");
+                //$("#node-config-susiaccess-row").html('<div style="text-align: center; margin-top: 20px; "><a class="btn" id="node-config-susiaccess-start" href="http://172.22.12.209:8080/webresources/Auth/authorize?response_type=code&client_id=susiaccess&state=xyz&redirect_uri=' + callback + '" target="_blank">Click here to authenticate with SUSIAccess</a></div>');
+                $("#node-config-susiaccess-row").html('<div style="text-align: center; margin-top: 20px;"><a class="btn" id="node-config-susiaccess-start" target="_blank">Click here to authenticate with SUSIAccess</a></div>');
+                $("#node-config-susiaccess-start").click(function() {
+                    var url = $('#node-input-url').val();
+                    var port = $('#node-input-port').val();
+                    if(url === '' || port === ''){
+                        alert('please fill server url and port');
+                        return;
+                    }
+                    window.open('http://' + url + ':' + port + '/webresources/Auth/authorize?response_type=code&client_id=c2EzMSRub2RlcmVk&redirect_uri='+ callback);
+                    susiaccessConfigNodeIntervalId = window.setTimeout(pollSUSIAccessCredentials(),2000);
+                });
+            }
+            function updateSUSIAccessName(sn) {
+                $("#node-config-input-susiaccess_name").val(sn);                
+                $("#node-config-susiaccess-row").html('<label><i class="fa fa-user"></i>SA_Name</label><span class="input-xlarge uneditable-input">'+sn+'</span>');
+            }
+            
+            function pollSUSIAccessCredentials(e) {
+                $.getJSON('credentials/susiaccess-credentials/'+susiaccessConfigNodeId + '/auth',function(data) {
+                    var result = data.result;
+                    if(result === 'success'){     
+                        updateSUSIAccessName(susiaccessConfigNodeId);
+                        susiaccessConfigNodeIntervalId = null;
+                        $("#node-config-dialog-ok").button("enable");
+                    }else{
+                        susiaccessConfigNodeIntervalId = window.setTimeout(pollSUSIAccessCredentials,2000);
+                    }
+                });
+            }
+
+            if (!this.susiaccess_name || this.susiaccess_name === "") {
+                showSUSIAccessAuthStart(this);
+            } else {
+                if (this.credentials.susiaccess_name) {
+                    updateSUSIAccessName(this.credentials.susiaccess_name);
+                } else {
+                    showSUSIAccessAuthStart(this);
+                }
+            }
+        },
+        oneditsave: function () {
+            if (susiaccessConfigNodeIntervalId) {
+                window.clearTimeout(susiaccessConfigNodeIntervalId);
+            }
+        },
+        oneditcancel: function(adding) {
+            if (susiaccessConfigNodeIntervalId) {
+                window.clearTimeout(susiaccessConfigNodeIntervalId);
+            }
+        }
+    });
+</script>
+<script type="text/javascript">
+    RED.nodes.registerType('ServerSetting', {
+        category: 'General',
+        color: 'rgb(230, 161, 5)',
+        defaults: {
+            sa_credential: {type:"credential",required:true},
+            location: {value: ""},
+            url: {value: "localhost"},
+            port: {value: "8080"},
+            encodestr: {value: ""},
+            flag: {value: "encode"},
+            connectype: {value: "basic"},
+            user: {value:""}
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "subflow.png",
+        label: function () {
+            return this.name || "ServerSetting";
+        },
+        oneditprepare: function () {
+            $('#node-input-name').val(this.name);
+            $('#node-input-connectype').change(function(){
+                var value = $(this).val();
+                switch(value){
+                    case 'basic':
+                        $('.basic').show();
+                        $('.oauth').hide();
+                        break;
+                    case 'oauth':
+                        $('.basic').hide();
+                        $('.oauth').show();
+                        break;
+                }                
+            });
+        },
+        oneditsave: function () {
+            var localitem = {};
+            localitem.protocol = location.protocol;
+            localitem.hostname = location.hostname;
+            localitem.port = location.port;
+            this.location = localitem;
+            this.name = $('#node-input-name').val();
+            var username = $('#node-input-user').val();
+            var pwd = $('#node-input-pwd').val();
+            this.encodestr = btoa(username + '$' + pwd);
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="ServerSetting">
+    <div class="form-row">
+        <label for="node-input-connectype"><i class="fa fa-asterisk"></i> Type</label>
+        <select type="text" id="node-input-connectype" style="width:72%;">
+            <option value="basic">Basic</option>
+            <option value="oauth">OAuth</option>
+        </select>
+    </div>
+    <hr/>
+    <div class="form-row oauth">
+        <label for="node-input-sa_credential"><i class="fa fa-user"></i> SA ID</label>
+        <input type="text" id="node-input-sa_credential">
+    </div>
+    <div class="form-row">
+    <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Node Name">
+    </div>
+    <div class="form-row">
+    <label for="node-input-url"><i class="fa fa-globe"></i> URL</label>
+    <input type="text" id="node-input-url" placeholder="http://" style = "width: 40%">
+    <input type="text" id="node-input-port" placeholder="port" style="width: 70px">
+    </div>  
+    <div class="form-row basic">
+    <label for="node-input-user"><i class="fa fa-user"></i> Username</label>
+    <input type="text" id="node-input-user" placeholder="User Name">
+    </div>
+    <div class="form-row basic">
+    <label for="node-input-pwd"><i class="fa fa-lock"></i> Password</label>
+    <input type="password" id="node-input-pwd" placeholder="Password">
+    </div>      
+</script>
+
+<script type="text/x-red" data-help-name="ServerSetting">
+    <p>Set url, port, username and password for SUSIAccess.</p>
+</script>

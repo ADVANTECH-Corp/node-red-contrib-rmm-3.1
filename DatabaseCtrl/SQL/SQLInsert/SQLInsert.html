@@ -1,0 +1,219 @@
+<script>
+    function SQLInsert_Option(item) {
+        function submit(path, method, data, user, password, callback)
+        {
+            $.ajax({
+                cache: false,
+                type: method,
+                url: path,
+                data: data,
+                contentType: 'application/json',
+                dataType: 'text',
+                error: function (xhr, exception)
+                {
+                    switch (exception.toString().toLowerCase())
+                    {
+                        case "timeout" :
+                            break;
+                        case "error" :
+                            $('#node-sa-warnstr').html('http error').show();
+                            break;
+                    }
+                    return;
+                },
+                beforeSend: function (xhr)
+                {
+                    xhr.setRequestHeader("Authorization", "Basic " + btoa("admin:admin"));
+                    xhr.setRequestHeader("Accept", "application/json");
+                },
+                success: function (response)
+                {
+                    callback(response);
+                }
+            });
+        }
+
+        $('#node-sa-input-getcol').click(function () {
+            var url = $('#node-sa-input-url').val();
+            var port = $('#node-sa-input-port').val();
+            var user = $('#node-sa-input-user').val();
+            var pwd = $('#node-sa-input-pwd').val();
+            var tablename = $('#node-sa-input-tablename').val();
+            if (typeof tablename === 'undefined' || tablename === '') {
+                $('#node-sa-warnstr').html('please enter table name').show();
+                return;
+            }
+            $('#node-sa-warnstr').hide();
+            submit('http://' + url + ':' + port + '/webresources/SQLMgmt/getTableInfo/' + tablename, 'get', '', user, pwd, function (resultstr) {
+                var obj = JSON.parse(resultstr);
+                if (typeof obj['result']['ErrorCode'] === 'undefined') {
+                    var items = obj['result']['item'];
+                    var str = '';
+                    for (var index = 0; index < items.length; index++) {
+                        var feildName = items[index]['fieldName'];
+                        var feildType = items[index]['fieldType'];
+                        str = str + '<tr align = "center">';
+                        if (feildType.indexOf('character') >= 0) {
+                            str = str + '<td>' + feildName + '(char)</td>';
+                            str = str + '<td><input type="text" placeholder="value" valtype = "char" fieldname="' + feildName + '"></td>';
+                        } else if (feildType.indexOf('bigint') >= 0) {
+                            str = str + '<td>' + feildName + '(bigint)</td>';
+                            str = str + '<td><input type="number" placeholder="value" valtype = "bigint" fieldname="' + feildName + '"></td>';
+                        } else if (feildType.indexOf('double') >= 0) {
+                            str = str + '<td>' + feildName + '(double)</td>';
+                            str = str + '<td><input type="text" placeholder="value" valtype = "double" fieldname="' + feildName + '"></td>';
+                        } else if (feildType.indexOf('timestamp') >= 0) {
+                            str = str + '<td>' + feildName + '(ts)</td>';
+                            str = str + '<td><input type="date" placeholder="timestamp" valtype = "ts" fieldname="' + feildName + '"></td>';
+                        }
+
+                        str = str + '</tr>';
+                    }
+                    $('#node-sa-input-table tr').has('td').remove();
+                    $('#node-sa-input-table').append(str);
+                    $('#node-sa-input-table').attr('hasvalue','true');
+                } else {
+                    $('#node-sa-warnstr').html(obj['result']['ErrorCode'] + ' : ' + obj['result']['Description']);
+                    $('#node-sa-warnstr').show();
+                }
+            });
+        });
+
+        restoreFiledData(item);
+    }
+
+    function restoreFiledData(item) {
+        var data = item.data;
+        if (typeof data === 'undefined' || data === '') {
+            return;
+        } else {
+            var str = '';
+            for (var index = 0; index < data.length; index++) {
+                var feildName = data[index].fieldname;
+                var value = data[index].value;
+                str = str + '<tr align = "center">';               
+                    str = str + '<td>' + feildName + '</td>';
+                    str = str + '<td>' + value + '</td>';                
+                str = str + '</tr>';
+            }
+            $('#node-sa-input-table tr').has('td').remove();
+            $('#node-sa-input-table').append(str);
+            $('#node-sa-input-table').attr('hasvalue','false');
+        }
+    }
+
+    function setFieldItemData(item) {
+        var dataArray = [];
+        var checkBool = true;
+        $('#node-sa-input-table input').each(function () {
+            if (!checkBool)
+                return;
+            var fieldtype = $(this).attr('valtype');
+            var value = $(this).val();
+            if (fieldtype === 'double') {
+                value = parseFloat(value);
+                if (isNaN(value)) {
+                    checkBool = false;
+                    return;
+                }
+            } else if (value === '' || typeof value === 'undefined') {
+                checkBool = false;
+                return;
+            }
+        });
+
+        if (checkBool) {
+            $('#node-sa-input-table input').each(function () {
+                var fieldtype = $(this).attr('valtype');
+                var fieldname = $(this).attr('fieldname');
+                var value = $(this).val();
+                var objdata = new Object();
+                objdata.fieldname = fieldname;
+                objdata.value = value;
+                dataArray.push(objdata);
+            });
+            item.data = dataArray;
+        } else {
+            alert('value is illegal');
+            item.data = '';
+        }
+    }
+</script>
+<script type="text/javascript">
+    RED.nodes.registerType('SQLInsert', {
+        category: 'RMM31_SQLCtrl',
+        color: 'rgb(157, 181, 195)',
+        defaults: {
+            url: {value: "localhost"},
+            port: {value: "8080"},
+            tablename: {value: ""},
+            data: {value: ""}
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "file.png",
+        label: function () {
+            return this.name || "SQLInsert";
+        },
+        oneditprepare: function () {
+            $('#node-input-name').val(this.name);
+            $('#node-sa-input-url').val(this.url);
+            $('#node-sa-input-port').val(this.port);
+            $('#node-sa-input-tablename').val(this.tablename);
+            SQLInsert_Option(this);
+        },
+        oneditsave: function () {
+            this.name = $('#node-input-name').val();
+            this.url = $('#node-sa-input-url').val();
+            this.port = $('#node-sa-input-port').val();
+            this.tablename = $('#node-sa-input-tablename').val();
+            if($('#node-sa-input-table').attr('hasvalue') === 'true')
+                setFieldItemData(this);
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="SQLInsert">
+    <div class="form-row">
+    <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Node Name">
+    </div> 
+    <div class="form-row">
+    <label for="node-sa-input-url"><i class="fa fa-globe"></i> URL</label>
+    <input type="text" id="node-sa-input-url" placeholder="http://" style = "width: 40%">
+    <input type="text" id="node-sa-input-port" placeholder="port" style="width: 70px">
+    </div>
+    <div class="form-row">
+    <label for="node-sa-input-user"><i class="fa fa-user"></i> Username</label>
+    <input type="text" id="node-sa-input-user" placeholder="User Name">
+    </div>
+    <div class="form-row">
+    <label for="node-sa-input-password"><i class="fa fa-lock"></i> Password</label>
+    <input type="password" id="node-sa-input-pwd" placeholder="Password">
+    </div>
+    <div class="form-row">
+    <label for="node-sa-input-tablename"><i class="fa fa-server"></i> TableName</label>
+    <input type="text" id="node-sa-input-tablename" placeholder="Table Name">        
+    </div>  
+    <div class="form-row">
+    <a class="btn btn-mini" id="node-sa-input-getcol"><i class="fa fa-plus"></i> Get Table Columns</a>
+    <span style="float: right"><a id="node-sa-warnstr" style = "color: red; display: none"></a></span>
+    </div>  
+    <div class="form-row node-sa-input-rule-container-row" style="margin-bottom: 0px;">
+    <div id="node-sa-input-rule-container-div" style="box-sizing: border-box; border-radius: 5px; height: 210px; padding: 5px; border: 1px solid #ccc; overflow-y:scroll;">
+    <ol id="node-sa-input-rule-container" style=" list-style-type:none; margin: 0;" class="ui-sortable">    
+    <table id="node-sa-input-table" border=1 width=100%>
+    <tr>
+    <th>column name</th>
+    <th>value</th>
+    </table>
+    </ol>
+    </div>
+    </div>
+</script>
+<script type="text/x-red" data-help-name="SQLInsert">
+    <p>Insert data into a existed table of SUSIAccess 3.1 postgre database. </p>
+    <p>User set the server ip (<code>msg.url</code>), port (<code>msg.port</code>), username (<code>msg.username</code>) and password (<code>msg.pwd</code>).</p>
+    <p>User can set the table name and table field under this node or set <code>msg.tablename</code> and <code>msg.fields</code>. </p>
+    <p>If you set <code>msg.tablename</code> or <code>msg.fields</code>, the setting of this node will be override. </p>
+</script>

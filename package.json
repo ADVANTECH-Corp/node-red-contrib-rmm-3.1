@@ -1,0 +1,56 @@
+{
+  "name": "node-red-contrib-rmm3.1",
+  "version": "0.0.37",
+  "description": "RMM 3.1 for node-red",
+  "dependencies": {
+    "ws": "0.4.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ADVANTECH-Corp/node-red-contrib-rmm-3.1.git"
+  },
+  "keywords": [
+    "rmm"
+  ],
+  "homepage": "https://github.com/ADVANTECH-Corp/node-red-contrib-rmm-3.1",
+  "node-red": {
+    "nodes": {
+      "ServerSetting": "General/ServerSetting/ServerSetting.js",
+      "DeviceGet": "General/DeviceGet/DeviceGet.js",
+      "SensorGet": "General/SensorGet/SensorGet.js",
+      "FileDownload": "General/FileDownload/FileDownload.js",
+      "SWData": "Device Query/SWM Query/SWData/SWData.js",
+      "HWData": "Device Query/HWM Query/HWData/HWData.js",
+      "HDDData": "Device Query/HWM Query/HDDData/HDDData.js",
+      "BootTime": "Device Query/HWM Query/BootTime/BootTime.js",
+      "NetworkData": "Device Query/HWM Query/NetworkData/NetworkData.js",
+      "GWSensor": "Device Query/GWSensor/GWSensor.js",
+      "SUSIControl": "Device Query/SUSIControl/SUSIControl.js",
+      "HDDMonitor": "Device Query/HDDMonitor/HDDMonitor.js",
+      "ProcessMonitor": "Device Query/ProcessMonitor/ProcessMonitor.js",
+      "NetMonitor": "Device Query/NetMonitor/NetMonitor.js",
+      "PowerCtrl": "Device Ctrl/PowerCtrl/PowerCtrl.js",
+      "ProtectCtrl": "Device Ctrl/ProtectCtrl/ProtectCtrl.js",
+      "AcronisCtrl": "Device Ctrl/AcronisCtrl/AcronisCtrl.js",
+      "ScreenShot": "Device Ctrl/ScreenShot/ScreenShot.js",
+      "SUSICtrlSet": "Device Ctrl/SUSICtrlSet/SUSICtrlSet.js",
+      "EmailSend": "Event/EmailSend/EmailSend.js",
+      "SMSSend": "Event/SMSSend/SMSSend.js",
+      "LongPolling": "Event/LongPolling/LongPolling.js",
+      "WSRetrieve": "Event/WSRetrieve/WSRetrieve.js",
+      "WSServer": "Event/WSServer/WSServer.js",
+      "SQLCreate": "DatabaseCtrl/SQL/SQLCreate/SQLCreate.js",
+      "SQLInsert": "DatabaseCtrl/SQL/SQLInsert/SQLInsert.js",
+      "SQLQuery": "DatabaseCtrl/SQL/SQLQuery/SQLQuery.js",
+      "SQLDelete": "DatabaseCtrl/SQL/SQLDelete/SQLDelete.js",
+      "SQLUpdate": "DatabaseCtrl/SQL/SQLUpdate/SQLUpdate.js",
+      "NoSQLCreate": "DatabaseCtrl/NoSQL/NoSQLCreate/NoSQLCreate.js",
+      "NoSQLInsert": "DatabaseCtrl/NoSQL/NoSQLInsert/NoSQLInsert.js",
+      "NoSQLDelete": "DatabaseCtrl/NoSQL/NoSQLDelete/NoSQLDelete.js",
+      "NoSQLUpdate": "DatabaseCtrl/NoSQL/NoSQLUpdate/NoSQLUpdate.js",
+      "NoSQLQuery": "DatabaseCtrl/NoSQL/NoSQLQuery/NoSQLQuery.js"
+    }
+  },
+  
+  "readmeFilename": "README.md"
+}

@@ -1,0 +1,456 @@
+<script>
+    $(document).on('click', "#node-sa-nosqlquery-table-project .remove-btn", function () {
+        $(this).parent().parent().remove();
+    });
+    $(document).on('click', "#node-sa-nosqlquery-table-match .remove-btn", function () {
+        $(this).parent().parent().remove();
+    });
+    $(document).on('click', "#node-sa-nosqlquery-table-sort .remove-btn", function () {
+        $(this).parent().parent().remove();
+    });
+    function NoSQLQuery_Option(item) {
+        $('#node-sa-nosqlquery-select-tab').change(function () {
+            var value = $(this).val();
+            $('#node-sa-warnstr').hide();
+            switch (value) {
+                case '$project':
+                    $('.project').show();
+                    $('.match').hide();
+                    $('.limit').hide();
+                    $('.skip').hide();
+                    $('.sort').hide();
+                    break;
+                case '$match':
+                    $('.project').hide();
+                    $('.match').show();
+                    $('.limit').hide();
+                    $('.skip').hide();
+                    $('.sort').hide();
+                    break;
+                case '$limit':
+                    $('.project').hide();
+                    $('.match').hide();
+                    $('.limit').show();
+                    $('.skip').hide();
+                    $('.sort').hide();
+                    break;
+                case '$skip':
+                    $('.project').hide();
+                    $('.match').hide();
+                    $('.limit').hide();
+                    $('.skip').show();
+                    $('.sort').hide();
+                    break;
+                case '$sort':
+                    $('.project').hide();
+                    $('.match').hide();
+                    $('.limit').hide();
+                    $('.skip').hide();
+                    $('.sort').show();
+                    break;
+            }
+        });
+
+        $('#node-sa-nosqlquery-input-addproject').click(function () {
+            var pn = $('#node-sa-nosqlquery-input-projectname').val();
+            if (pn === '') {
+                $('#node-sa-warnstr').html('please enter column name');
+                $('#node-sa-warnstr').show();
+                return;
+            }
+            
+            var isDuplicate = false;
+            $('#node-sa-nosqlquery-table-project .data').each(function () {
+                var _colname = $(this).attr('projectname');
+                if (pn === _colname) {
+                    isDuplicate = true;
+                    return;
+                }
+            });
+            if (isDuplicate) {
+                $('#node-sa-warnstr').html('the sort name is duplicate');
+                $('#node-sa-warnstr').show();
+                return;
+            }
+            var str = '';
+            str = str + '<tr class="data" projectname="' + pn + '" align="center">';
+            str = str + '<td><a class="btn btn-mini remove-btn" style="margin-left: auto;"><i class="fa fa-remove"></i></a></td>';
+            str = str + '<td style="white-space:pre;">' + pn + '</td>';
+            str = str + '</tr>';
+            $('#node-sa-nosqlquery-table-project').append(str);
+        });
+
+        $('#node-sa-nosqlquery-input-addmatch').click(function () {
+            var matchname = $('#node-sa-nosqlquery-input-match').val();
+            var operator = $('#node-sa-nosqlquery-select-match').val();
+            var value = $('#node-sa-nosqlquery-input-colvalue-match').val();
+            var type = $('#node-sa-nosqlquery-select-valuetype-match').val();
+            if (matchname === '') {
+                $('#node-sa-warnstr').html('please enter column name');
+                $('#node-sa-warnstr').show();
+                return;
+            } else if (value === '') {
+                $('#node-sa-warnstr').html('please enter column value');
+                $('#node-sa-warnstr').show();
+                return;
+            } else {
+                $('#node-sa-warnstr').hide();
+            }
+
+            switch (type) {
+                case 'str':
+                    break;
+                case 'val':
+                    if (isNaN(parseFloat(value))) {
+                        $('#node-sa-warnstr').html('please enter correct value type');
+                        $('#node-sa-warnstr').show();
+                        return;
+                    }
+                    break;
+            }
+            
+            var isDuplicate = false;
+            $('#node-sa-nosqlquery-table-match .data').each(function () {
+                var _colname = $(this).attr('matchname');
+                if (matchname === _colname) {
+                    isDuplicate = true;
+                    return;
+                }
+            });
+            if (isDuplicate) {
+                $('#node-sa-warnstr').html('the sort name is duplicate');
+                $('#node-sa-warnstr').show();
+                return;
+            }
+            var str = '';
+            str = str + '<tr class="data" matchname="' + matchname + '" operator="' + operator + '" value="' + value + '" type="' + type + '" align="center">';
+            str = str + '<td><a class="btn btn-mini remove-btn" style="margin-left: auto;"><i class="fa fa-remove"></i></a></td>';
+            str = str + '<td style="white-space:pre;">' + matchname + '</td>';
+            str = str + '<td style="white-space:pre;">' + operator + '</td>';
+            switch (type) {
+                case 'str':
+                    str = str + '<td style="white-space:pre;">' + value + '(string)</td>';
+                    break;
+                case 'val':
+                    str = str + '<td style="white-space:pre;">' + value + '(value)</td>';
+                    break;
+            }
+            str = str + '</tr>';
+            $('#node-sa-nosqlquery-table-match').append(str);
+        });
+
+        $('#node-sa-nosqlquery-input-addsort').click(function () {
+            var sortname = $('#node-sa-nosqlquery-input-sort').val();
+            var sorttype = $('#node-sa-nosqlquery-select-sorttype').val();
+            if (sortname === '') {
+                $('#node-sa-warnstr').html('please enter column name');
+                $('#node-sa-warnstr').show();
+                return;
+            }
+
+            var isDuplicate = false;
+            $('#node-sa-nosqlquery-table-sort .data').each(function () {
+                var _colname = $(this).attr('sortname');
+                if (sortname === _colname) {
+                    isDuplicate = true;
+                    return;
+                }
+            });
+            if (isDuplicate) {
+                $('#node-sa-warnstr').html('the sort name is duplicate');
+                $('#node-sa-warnstr').show();
+                return;
+            }
+
+            var str = '';
+            str = str + '<tr class="data" sortname="' + sortname + '" sorttype = "' + sorttype + '" align="center">';
+            str = str + '<td><a class="btn btn-mini remove-btn" style="margin-left: auto;"><i class="fa fa-remove"></i></a></td>';
+            str = str + '<td style="white-space:pre;">' + sortname + '</td>';
+            switch (sorttype) {
+                case 'asc':
+                    str = str + '<td style="white-space:pre;">ASC</td>';
+                    break;
+                case 'desc':
+                    str = str + '<td style="white-space:pre;">DESC</td>';
+                    break;
+            }
+            str = str + '</tr>';
+            $('#node-sa-nosqlquery-table-sort').append(str);
+        });
+        NoSQLQuery_restorePorject(item);
+        NoSQLQuery_restoreMatch(item);
+        NoSQLQuery_resotreLimit(item);
+        NoSQLQuery_resotreSkip(item);
+        NoSQLQuery_resotreSort(item);
+    }
+
+    function NoSQLQuery_restorePorject(item) {
+        var projectnames = item.projectnames;
+        if (typeof projectnames === 'undefined' || projectnames === '') {
+            return;
+        } else {
+            var str = '';
+            for (var index in projectnames) {
+                var projectname = projectnames[index].projectname;
+                str = str + '<tr class="data" projectname="' + projectname + '" align="center">';
+                str = str + '<td><a class="btn btn-mini remove-btn" style="margin-left: auto;"><i class="fa fa-remove"></i></a></td>';
+                str = str + '<td style="white-space:pre;">' + projectname + '</td>';
+                str = str + '</tr>';
+            }
+            $('#node-sa-nosqlquery-table-project').append(str);
+        }
+    }
+    function NoSQLQuery_restoreMatch(item) {
+        var matchnames = item.matchnames;
+        if (typeof matchnames === 'undefined' || matchnames === '') {
+            return;
+        } else {
+            var str = '';
+            for (var index in matchnames) {
+                var matchname = matchnames[index].matchname;
+                var operator = matchnames[index].operator;
+                var value = matchnames[index].value;
+                var type = matchnames[index].type;
+                str = str + '<tr class="data" matchname="' + matchname + '" operator="' + operator + '" value="' + value + '" type="' + type + '" align="center">';
+                str = str + '<td><a class="btn btn-mini remove-btn" style="margin-left: auto;"><i class="fa fa-remove"></i></a></td>';
+                str = str + '<td style="white-space:pre;">' + matchname + '</td>';
+                str = str + '<td style="white-space:pre;">' + operator + '</td>';
+                switch (type) {
+                    case 'str':
+                        str = str + '<td style="white-space:pre;">' + value + '(string)</td>';
+                        break;
+                    case 'val':
+                        str = str + '<td style="white-space:pre;">' + value + '(value)</td>';
+                        break;
+                }
+                str = str + '</tr>';
+            }
+            $('#node-sa-nosqlquery-table-match').append(str);
+        }
+    }
+    function NoSQLQuery_resotreLimit(item) {
+        if (typeof item.limit === 'undefined' || item.limit === '')
+            return;
+        $('#node-sa-nosqlquery-input-limit').val(item.limit);
+    }
+    function NoSQLQuery_resotreSkip(item) {
+        if (typeof item.limit === 'undefined' || item.limit === '')
+            return;
+        $('#node-sa-nosqlquery-input-skip').val(item.skip);
+    }
+    function NoSQLQuery_resotreSort(item) {
+        var sortnames = item.sortnames;
+        if (typeof sortnames === 'undefined' || sortnames === '') {
+            return;
+        } else {
+            var str = '';
+            for (var index in sortnames) {
+                var sortname = sortnames[index].sortname;
+                var sorttype = sortnames[index].sorttype;
+                str = str + '<tr class="data" sortname="' + sortname + '" sorttype = "' + sorttype + '" align="center">';
+                str = str + '<td><a class="btn btn-mini remove-btn" style="margin-left: auto;"><i class="fa fa-remove"></i></a></td>';
+                str = str + '<td style="white-space:pre;">' + sortname + '</td>';
+                switch (sorttype) {
+                    case 'asc':
+                        str = str + '<td style="white-space:pre;">ASC</td>';
+                        break;
+                    case 'desc':
+                        str = str + '<td style="white-space:pre;">DESC</td>';
+                        break;
+                }
+                str = str + '</tr>';
+            }
+            $('#node-sa-nosqlquery-table-sort').append(str);
+        }
+    }
+    function NoSQLQuery_set2Data(item) {
+        NoSQLQuery_storePorject(item);
+        NoSQLQuery_storeMatch(item);
+        NoSQLQuery_storeLimit(item);
+        NoSQLQuery_storeSkip(item);
+        NoSQLQuery_storeSort(item);
+    }
+    function NoSQLQuery_storePorject(item) {
+        var dataArray = [];
+        $('#node-sa-nosqlquery-table-project .data').each(function () {
+            var projectname = $(this).attr('projectname');
+            var objdata = new Object();
+            objdata.projectname = projectname;
+            dataArray.push(objdata);
+        });
+        item.projectnames = dataArray;
+    }
+    function NoSQLQuery_storeMatch(item) {
+        var dataArray = [];
+        $('#node-sa-nosqlquery-table-match .data').each(function () {
+            var matchname = $(this).attr('matchname');
+            var operator = $(this).attr('operator');
+            var value = $(this).attr('value');
+            var type = $(this).attr('type');
+            var objdata = new Object();
+            objdata.matchname = matchname;
+            objdata.operator = operator;
+            objdata.value = value;
+            objdata.type = type;
+            dataArray.push(objdata);
+        });
+        item.matchnames = dataArray;
+    }
+    function NoSQLQuery_storeLimit(item) {
+        item.limit = $('#node-sa-nosqlquery-input-limit').val();
+    }
+    function NoSQLQuery_storeSkip(item) {
+        item.skip = $('#node-sa-nosqlquery-input-skip').val();
+    }
+    function NoSQLQuery_storeSort(item) {
+        var dataArray = [];
+        $('#node-sa-nosqlquery-table-sort .data').each(function () {
+            var sortname = $(this).attr('sortname');
+            var sorttype = $(this).attr('sorttype');
+            var objdata = new Object();
+            objdata.sortname = sortname;
+            objdata.sorttype = sorttype;
+            dataArray.push(objdata);
+        });
+        item.sortnames = dataArray;
+    }
+</script>
+<script type="text/javascript">
+    RED.nodes.registerType('NoSQLQuery', {
+        category: 'RMM31_NoSQLCtrl',
+        color: 'rgb(157, 200, 230)',
+        defaults: {
+            collectionname: {value: ""},
+            projectnames: {value: ""},
+            matchnames: {value: ""},
+            skip: {value: ""},
+            limit: {value: ""},
+            sortnames: {value: ""}
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "rbe.png",
+        label: function () {
+            return this.name || "NoSQLQuery";
+        },
+        oneditprepare: function () {
+            $('#node-input-name').val(this.name);
+            NoSQLQuery_Option(this);
+        },
+        oneditsave: function () {
+            this.name = $('#node-input-name').val();
+            NoSQLQuery_set2Data(this);
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="NoSQLQuery">
+    <div class="form-row">
+    <label style="width: 150px" for="node-input-name"><i class="icon-tag"></i> Name</label>
+    <input style="width: 60%" type="text" id="node-input-name" placeholder="Node Name">
+    </div>     
+    <div class="form-row">
+    <label style="width: 150px" for="node-input-collectionname"><i class="fa fa-server"></i> Collection Name</label>
+    <input style="width: 60%" type="text" id="node-input-collectionname" placeholder="Collection Name">        
+    </div>  
+    <div class="form-row project">
+    <label style="width: 150px" for="node-sa-nosqlquery-input-projectname"><i class="fa fa-viacoin"></i> Column Name</label>
+    <input style="width: 60%" type="text" placeholder="Column Name" id="node-sa-nosqlquery-input-projectname">        
+    </div> 
+    <div class="form-row match" style="display: none">
+    <label style="width: 150px" for="node-sa-nosqlquery-input-match"><i class="fa fa-viacoin"></i> Column Name</label>
+    <input style="width: 60%" type="text" placeholder="Column Name" id="node-sa-nosqlquery-input-match">        
+    </div> 
+    <div class="form-row match" style="display: none">
+    <label style="width: 150px" for="node-sa-nosqlquery-select-match"><i class="fa fa-viacoin"></i> Operator</label>
+    <select style="width: 60%" id="node-sa-nosqlquery-select-match">
+        <option value="$eq">$eq</option>
+        <option value="$gt">$gt</option>
+        <option value="$gte">$gte</option>
+        <option value="$lt">$lt</option>
+        <option value="$lte">$lte</option>
+        <option value="$ne">$ne</option>
+        <option value="$in">$in</option>
+        <option value="$nin">$nin</option>
+    </select>       
+    </div>
+    <div class="form-row match" style="display: none">
+    <label style="width: 150px" for="node-sa-nosqlquery-input-colvalue-match"><i class="fa fa-vine"></i> Value</label>
+    <input style="width: 40%" type="text" id="node-sa-nosqlquery-input-colvalue-match" placeholder="Value"> 
+    <select style="width: 20%" id="node-sa-nosqlquery-select-valuetype-match">
+        <option value="str">string</option>
+        <option value="val">value</option>
+    </select>
+    </div> 
+    <div class="form-row sort" style="display: none">
+    <label style="width: 150px" for="node-sa-nosqlquery-input-sort"><i class="fa fa-viacoin"></i> Column Name</label>
+    <input style="width: 60%" type="text" placeholder="Column Name" id="node-sa-nosqlquery-input-sort">        
+    </div> 
+    <div class="form-row sort" style="display: none">
+    <label style="width: 150px" for="node-sa-nosqlquery-select-sorttype"><i class="fa fa-vine"></i> Value</label>
+    <select style="width: 60%" id="node-sa-nosqlquery-select-sorttype">
+        <option value="asc">ASC</option>
+        <option value="desc">DESC</option>
+    </select>
+    </div> 
+    <div class="form-row">
+    <a class="btn btn-mini project" id="node-sa-nosqlquery-input-addproject"><i class="fa fa-plus"></i> Add Project</a>
+    <a class="btn btn-mini match" id="node-sa-nosqlquery-input-addmatch" style="display: none;"><i class="fa fa-plus"></i> Add Case</a>
+    <a class="btn btn-mini limit" style="opacity: 0"><i class="fa fa-plus"></i></a>
+    <a class="btn btn-mini skip" style="opacity: 0"><i class="fa fa-plus"></i></a>
+    <a class="btn btn-mini sort" id="node-sa-nosqlquery-input-addsort" style="display: none;"><i class="fa fa-plus"></i> Add Sort</a>
+    <a id="node-sa-warnstr" style = "color: red; display: none"></a>
+    <span style="float: right">
+    <select style="width: 120px; margin-top: -5px" id = "node-sa-nosqlquery-select-tab">
+    <option value='$project'>$project</option>
+    <option value='$match'>$match</option>
+    <option value='$limit'>$limit</option>
+    <option value='$skip'>$skip</option>         
+    <option value='$sort'>$sort</option>
+    </select>
+    </span>
+    </div>  
+    <div class="form-row node-sa-input-rule-container-row ui-disabled" style="margin-bottom: 0px;">
+    <div style="box-sizing: border-box; border-radius: 5px; height: 200px; padding: 5px; border: 1px solid #ccc; overflow-y:scroll;">
+    <ol style=" list-style-type:none; margin: 0;" class="ui-sortable">    
+    <table class="project" id="node-sa-nosqlquery-table-project" border=1 style="width: 100%">
+    <tr>
+    <th style="width: 25px;"></th>
+    <th>Column Name</th>
+    </tr>    
+    </table>  
+    <table class="match" id="node-sa-nosqlquery-table-match" border=1 style="width: 100%; display: none">
+    <tr>
+    <th style="width: 25px;"></th>
+    <th>Column Name</th>
+    <th>Operator</th>
+    <th>Value</th>
+    </tr>    
+    </table> 
+    <li class="limit" id="node-sa-nosqlquery-input-li-limit" style="background: #fff; margin:0; padding:8px 0px; border-bottom: 1px solid #ccc; display: none;">
+    <a>Limit</a>
+    <span style="float: right; margin-top: -8px"><input class="btn-mini" type="number" min="1" step="1" id="node-sa-nosqlquery-input-limit" placeholder="Value"></span>
+    </li>
+    <li class="skip" id="node-sa-nosqlquery-input-li-skip" style="background: #fff; margin:0; padding:8px 0px; border-bottom: 1px solid #ccc; display: none;">
+    <a>Skip</a>
+    <span style="float: right; margin-top: -8px"><input class="btn-mini" type="number" min="1" step="1" id="node-sa-nosqlquery-input-skip" placeholder="Value"></span>
+    </li>
+    <table class="sort" id="node-sa-nosqlquery-table-sort" border=1 style="width: 100%; display: none">
+    <tr>
+    <th style="width: 25px;"></th>
+    <th>Column Name</th>
+    <th>Order</th>
+    </tr>    
+    </table> 
+    </ol>
+    </div>
+    </div>    
+    </div>   
+    
+</script>
+<script type="text/x-red" data-help-name="NoSQLQuery">
+    <p>Query data from a existed collection of SUSIAccess 3.1 mongoDB. </p>
+    <p>User set the server ip (<code>msg.url</code>), port (<code>msg.port</code>), username (<code>msg.username</code>) and password (<code>msg.pwd</code>).</p>
+    <p>User can set the collection name, project names, match names, skip, limit and sort names under this node or set <code>msg.collectionname</code>, <code>msg.projectnames</code>, <code>msg.matchnames</code>, <code>msg.skip</code>, <code>msg.limit</code> and <code>msg.sortnames</code>. </p>
+    <p>If you set <code>msg.collectionname</code> or <code>msg.projectnames</code> or <code>msg.matchnames</code> or <code>msg.skip</code> or <code>msg.limit</code> or <code>msg.sortnames</code>, the setting of this node will be override. </p>
+</script>

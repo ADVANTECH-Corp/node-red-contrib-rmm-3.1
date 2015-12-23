@@ -1,0 +1,39 @@
+<script type="text/javascript">
+    RED.nodes.registerType('SensorGet', {
+        category: 'General',
+        color: 'rgb(230, 161, 5)',
+        defaults: {
+            deviceid: {value: ""}
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "subflow.png",
+        label: function () {
+            return this.name || "SensorGet";
+        },
+        oneditprepare: function () {
+            $('#node-input-name').val(this.name);
+        },
+        oneditsave: function () {
+            this.name = $('#node-input-name').val();            
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="SensorGet">
+    <div class="form-row">
+    <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Node Name">
+    </div>
+    <div class="form-row">
+    <label for="node-input-deviceid"><i class="fa fa-sign-in"></i> Device ID</label>
+    <input type="text" id="node-input-deviceid" placeholder="Device ID">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="SensorGet">
+    <p>Retrieve sensor id list for specific agent ID. </p>
+    <p>User set the server ip (<code>msg.url</code>), port (<code>msg.port</code>), username (<code>msg.username</code>) and password (<code>msg.pwd</code>).</p>
+    <p>User can set the device id under this node or set <code>msg.deviceid</code>. </p>
+    <p>If you set <code>msg.deviceid</code>, the setting of this node will be override. </p>
+</script>

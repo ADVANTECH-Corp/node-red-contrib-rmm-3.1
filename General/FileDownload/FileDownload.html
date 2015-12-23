@@ -1,0 +1,39 @@
+<script type="text/javascript">
+    RED.nodes.registerType('FileDownload', {
+        category: 'General',
+        color: 'rgb(230, 161, 5)',
+        defaults: {
+            filename: {value: ""}
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "subflow.png",
+        label: function () {
+            return this.name || "FileDownload";
+        },
+        oneditprepare: function () {
+            $('#node-input-name').val(this.name);
+            $('#node-sa-input-filename').val(this.filename);
+        },
+        oneditsave: function () {
+            this.name = $('#node-input-name').val();
+            this.filename = $('#node-sa-input-filename').val();
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="FileDownload">
+    <div class="form-row">
+    <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Node Name">
+    </div>
+    <div class="form-row node-input-filename">
+         <label for="node-sa-input-filename"><i class="fa fa-file"></i> Filename</label>
+         <input type="text" id="node-sa-input-filename" placeholder="Filename">    
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="FileDownload">
+    <p>Download a url link and save to specified path.</p>   
+    <p>User can send the download url <code>msg.downloadurl</code> and saved file path <code>msg.filename</code>. </p>
+</script>

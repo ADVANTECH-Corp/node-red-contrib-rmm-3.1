@@ -1,0 +1,41 @@
+<script type="text/javascript">
+    RED.nodes.registerType('GWSensor', {
+        category: 'SA31_DeviceQuery',
+        color: '#8dacd5',
+        defaults: {            
+            deviceid: {value: ""}
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "accel.png",
+        label: function () {
+            return this.name || "GWSensor";
+        },
+        oneditprepare: function () {
+            $('#node-input-name').val(this.name);            
+            $('#node-sa-input-deviceid').val(this.deviceid);
+        },
+        oneditsave: function () {
+            this.name = $('#node-input-name').val();            
+            this.deviceid = $('#node-sa-input-deviceid').val();
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="GWSensor">
+    <div class="form-row">
+    <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Node Name">
+    </div>    
+    <div class="form-row">
+    <label for="node-sa-input-deviceid"><i class="fa fa-sign-in"></i> Device ID</label>
+    <input type="text" id="node-sa-input-deviceid" placeholder="Device ID">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="GWSensor">
+    <p>Retreive the IoTGW sensor reported data from database, depend on sensorId existed.</p>
+    <p>User set the server ip (<code>msg.url</code>), port (<code>msg.port</code>), username (<code>msg.username</code>) and password (<code>msg.pwd</code>).</p>
+    <p>User can set the device id under this node or set <code>msg.deviceid</code>. </p>
+    <p>If you set <code>msg.deviceid</code>, the setting of this node will be override. </p>
+</script>

@@ -1,0 +1,34 @@
+<script>
+</script>
+<script type="text/javascript">
+    RED.nodes.registerType('LongPolling', {
+        category: 'RMM31_Event',
+        color: 'rgb(230, 224, 248)',
+        defaults: {            
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "arrow-in.png",
+        label: function () {
+            return this.name || "LongPolling";
+        },
+        oneditprepare: function () {
+            $('#node-input-name').val(this.name);            
+        },
+        oneditsave: function () {
+            this.name = $('#node-input-name').val();            
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="LongPolling">
+    <div class="form-row">
+    <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Node Name">
+    </div>        
+</script>
+
+<script type="text/x-red" data-help-name="LongPolling">
+    <p>Retrieve event from database, if event be generated and newer event id larger than "lasteventid". It will be kept 60s on this request without event be generated.</p>
+    <p>User set the server ip (<code>msg.url</code>), port (<code>msg.port</code>), username (<code>msg.username</code>) and password (<code>msg.pwd</code>).</p>
+</script>

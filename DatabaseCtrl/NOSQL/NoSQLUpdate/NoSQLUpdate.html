@@ -1,0 +1,354 @@
+<script>
+    $(document).on('click', "#node-sa-nosqlupdate-table-condictions .remove-btn", function () {
+        $(this).parent().parent().remove();
+    });
+    $(document).on('click', "#node-sa-nosqlupdate-table-fields .remove-btn", function () {
+        $(this).parent().parent().remove();
+    });
+    function NoSQLUpdate_Option(item) {
+        $('.fields').show();
+        $('.condlist, .condop').hide();
+        $('#node-sa-nosqlupdate-select-tab').change(function () {
+            $('#node-sa-nosqlupdate-warnstr').hide();
+            var value = $(this).val();
+            switch (value) {
+                case 'cond_op':
+                    $('.condlist').hide();
+                    $('.condop').show();
+                    $('.fields').hide();
+                    break;
+                case 'condictions':
+                    $('.condlist').show();
+                    $('.condop').hide();
+                    $('.fields').hide();
+                    break;
+                case 'fields':
+                    $('.condlist').hide();
+                    $('.condop').hide();
+                    $('.fields').show();
+                    break;
+            }
+        });
+
+        $('#node-sa-nosqlupdate-input-addcondition').click(function () {
+            var colname = $('#node-sa-nosqlupdate-input-colname').val();
+            var value = $('#node-sa-nosqlupdate-input-colvalue').val();
+            var operator = $('#node-sa-nosqlupdate-select-operator').val();
+            var type = $('#node-sa-nosqlupdate-select-valuetype').val();
+            if (colname === '') {
+                $('#node-sa-nosqlupdate-warnstr').html('please enter colname');
+                $('#node-sa-nosqlupdate-warnstr').show();
+                return;
+            } else if (value === '') {
+                $('#node-sa-nosqlupdate-warnstr').html('please enter value');
+                $('#node-sa-nosqlupdate-warnstr').show();
+                return;
+            } else {
+                $('#node-sa-nosqlupdate-warnstr').hide();
+            }
+
+            switch (type) {
+                case 'str':
+                    break;
+                case 'val':
+                    if (isNaN(parseFloat(value))) {
+                        $('#node-sa-nosqlupdate-warnstr').html('wrong value type');
+                        $('#node-sa-nosqlupdate-warnstr').show();
+                        return;
+                    }
+                    break;
+            }
+            
+            var isDuplicate = false;
+            $('#node-sa-nosqlupdate-table-condictions .data').each(function () {
+                var _colname = $(this).attr('name');
+                if (colname === _colname) {
+                    isDuplicate = true;
+                    return;
+                }
+            });
+            if (isDuplicate) {
+                $('#node-sa-nosqlupdate-warnstr').html('colume name duplicate');
+                $('#node-sa-nosqlupdate-warnstr').show();
+                return;
+            }
+            
+            var str = '';
+            str = str + '<tr class="data" name="' + colname + '" operator="' + operator + '" value="' + value + '" type="' + type +'" align="center">';
+            str = str + '<td><a class="btn btn-mini remove-btn" style="margin-left: auto;"><i class="fa fa-remove"></i></a></td>';
+            str = str + '<td style="white-space:pre;">' + colname + '</td>';
+            str = str + '<td style="white-space:pre;">' + operator + '</td>';
+            str = str + '<td style="white-space:pre;">' + value + '</td>';
+            str = str + '<td style="white-space:pre;">' + type + '</td>';
+            str = str + '</tr>';
+            $('#node-sa-nosqlupdate-table-condictions').append(str);
+        });
+        
+        $('#node-sa-nosqlupdate-input-addfield').click(function () {
+            var field = $('#node-sa-nosqlupdate-input-colname-fields').val();
+            var value = $('#node-sa-nosqlupdate-input-colvalue-fields').val();
+            var type = $('#node-sa-nosqlupdate-select-valuetype-fields').val();
+            if (field === '') {
+                $('#node-sa-nosqlupdate-warnstr').html('please enter colname');
+                $('#node-sa-nosqlupdate-warnstr').show();
+                return;
+            } else if (value === '') {
+                $('#node-sa-nosqlupdate-warnstr').html('please enter value');
+                $('#node-sa-nosqlupdate-warnstr').show();
+                return;
+            } else {
+                $('#node-sa-nosqlupdate-warnstr').hide();
+            }
+
+            switch (type) {
+                case 'str':
+                    break;
+                case 'val':
+                    if (isNaN(parseFloat(value))) {
+                        $('#node-sa-nosqlupdate-warnstr').html('wrong value type');
+                        $('#node-sa-nosqlupdate-warnstr').show();
+                        return;
+                    }
+                    break;
+            }
+            
+            var isDuplicate = false;
+            $('#node-sa-nosqlupdate-table-fields .data').each(function () {
+                var _field = $(this).attr('name');
+                if (field === _field) {
+                    isDuplicate = true;
+                    return;
+                }
+            });
+            if (isDuplicate) {
+                $('#node-sa-nosqlupdate-warnstr').html('colume name duplicate');
+                $('#node-sa-nosqlupdate-warnstr').show();
+                return;
+            }
+            
+            var str = '';
+            str = str + '<tr class="data" name="' + field + '" value="' + value + '" type="' + type +'" align="center">';
+            str = str + '<td><a class="btn btn-mini remove-btn" style="margin-left: auto;"><i class="fa fa-remove"></i></a></td>';
+            str = str + '<td style="white-space:pre;">' + field + '</td>';
+            str = str + '<td style="white-space:pre;">' + value + '</td>';
+            str = str + '<td style="white-space:pre;">' + type + '</td>';
+            str = str + '</tr>';
+            $('#node-sa-nosqlupdate-table-fields').append(str);
+        });
+        NoSQLUpdate_restorecond_opData(item);
+        NoSQLUpdate_restoreconds(item);
+        NoSQLUpdate_restorefields(item);
+    }
+
+    function NoSQLUpdate_restoreconds(item) {
+        if (typeof item.conditions === 'undefined' || item.conditions === '')
+            return;
+        var conditions = item.conditions;
+        var str = '';
+        for (var index in conditions) {
+            var colname = conditions[index].colname;
+            var operator = conditions[index].operator;
+            var value = conditions[index].value;
+            var type = conditions[index].type;
+            str = str + '<tr class="data" name="' + colname + '" operator = "' + operator + '" value = "' + value + '" type="' + type + '" align = "center">';
+            str = str + '<td><a class="btn btn-mini remove-btn" style="margin-left: auto;"><i class="fa fa-remove"></i></a></td>';
+            str = str + '<td style="white-space:pre;">' + colname + '</td>';
+            str = str + '<td style="white-space:pre;">' + operator + '</td>';
+            str = str + '<td style="white-space:pre;">' + value + '</td>';
+            str = str + '<td style="white-space:pre;">' + type + '</td>';
+            str = str + '</tr>';
+        }
+        $('#node-sa-nosqlupdate-table-condictions tr').has('td').remove();
+        $('#node-sa-nosqlupdate-table-condictions').append(str);
+    }
+    
+    function NoSQLUpdate_restorefields(item) {
+        if (typeof item.fields === 'undefined' || item.fields === '')
+            return;
+        var fields = item.fields;
+        var str = '';
+        for (var index in fields) {
+            var field = fields[index].field;
+            var value = fields[index].value;
+            var type = fields[index].type;
+            str = str + '<tr class="data" name="' + field + '" value = "' + value + '" type="' + type + '" align = "center">';
+            str = str + '<td><a class="btn btn-mini remove-btn" style="margin-left: auto;"><i class="fa fa-remove"></i></a></td>';
+            str = str + '<td style="white-space:pre;">' + field + '</td>';
+            str = str + '<td style="white-space:pre;">' + value + '</td>';
+            str = str + '<td style="white-space:pre;">' + type + '</td>';
+            str = str + '</tr>';
+        }
+        $('#node-sa-nosqlupdate-table-fields tr').has('td').remove();
+        $('#node-sa-nosqlupdate-table-fields').append(str);
+    }
+    function NoSQLUpdate_restorecond_opData(item) {
+        if (typeof item.cond_op === 'undefined' || item.cond_op === '')
+            return;
+        $('#node-sa-nosqlupdate-input-li-condop select').val(item.cond_op);
+    }
+
+    function NoSQLUpdate_set2Data(item) {
+        NoSQLUpdate_storeCondOp(item);
+        NoSQLUpdate_storeConds(item);
+        NoSQLUpdate_storeFields(item);
+    }
+
+    function NoSQLUpdate_storeConds(item) {
+        var condsArray = [];
+        $('#node-sa-nosqlupdate-table-condictions .data').each(function () {            
+            var colname = $(this).attr('name');
+            var operator = $(this).attr('operator');
+            var value = $(this).attr('value');
+            var type = $(this).attr('type');
+            var objdata = new Object();
+            objdata.colname = colname;
+            objdata.operator = operator;
+            objdata.value = value;
+            objdata.type = type;
+            condsArray.push(objdata);
+        });
+        item.conditions = condsArray;
+    }
+    function NoSQLUpdate_storeFields(item) {
+        var fieldsArray = [];
+        $('#node-sa-nosqlupdate-table-fields .data').each(function () {            
+            var field = $(this).attr('name');
+            var value = $(this).attr('value');
+            var type = $(this).attr('type');
+            var objdata = new Object();
+            objdata.field = field;
+            objdata.value = value;
+            objdata.type = type;
+            fieldsArray.push(objdata);
+        });
+        item.fields = fieldsArray;
+    }
+    function NoSQLUpdate_storeCondOp(item) {
+        item.cond_op = $('#node-sa-nosqlupdate-input-li-condop select').val();
+    }
+</script>
+<script type="text/javascript">
+    RED.nodes.registerType('NoSQLUpdate', {
+        category: 'RMM31_NoSQLCtrl',
+        color: 'rgb(157, 200, 230)',
+        defaults: {
+            collectionname: {value: ""},
+            cond_op: {value: ""},
+            conditions: {value: ""},
+            fields: {value: ""}
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "rbe.png",
+        label: function () {
+            return this.name || "NoSQLUpdate";
+        },
+        oneditprepare: function () {
+            $('#node-input-name').val(this.name);
+            NoSQLUpdate_Option(this);
+        },
+        oneditsave: function () {
+            this.name = $('#node-input-name').val();
+            NoSQLUpdate_set2Data(this);
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="NoSQLUpdate">
+    <div class="form-row">
+    <label style="width: 150px" for="node-input-name"><i class="icon-tag"></i> Name</label>
+    <input style="width: 60%" type="text" id="node-input-name" placeholder="Node Name">
+    </div>     
+    <div class="form-row">
+    <label style="width: 150px" for="node-input-collectionname"><i class="fa fa-server"></i> Collection Name</label>
+    <input style="width: 60%" type="text" id="node-input-collectionname" placeholder="Collection Name">        
+    </div>  
+    <div class="form-row condlist">
+    <label style="width: 150px" for="node-sa-nosqlupdate-input-colname"><i class="fa fa-viacoin"></i> Column Name</label>
+    <input style="width: 60%" type="text" id="node-sa-nosqlupdate-input-colname" placeholder="Column Name">        
+    </div>
+    <div class="form-row fields">
+    <label style="width: 150px" for="node-sa-nosqlupdate-input-colname-fields"><i class="fa fa-viacoin"></i> Field</label>
+    <input style="width: 60%" type="text" id="node-sa-nosqlupdate-input-colname-fields" placeholder="Field">        
+    </div>
+    <div class="form-row condlist">
+    <label style="width: 150px" for="node-sa-nosqlupdate-input-operator"><i class="fa fa-vine"></i> Operator</label>
+    <select style="width: 60%" id="node-sa-nosqlupdate-select-operator">
+        <option value="$eq">$eq</option>
+        <option value="$gt">$gt</option>
+        <option value="$gte">$gte</option>
+        <option value="$lt">$lt</option>
+        <option value="$lte">$lte</option>
+        <option value="$ne">$ne</option>
+        <option value="$in">$in</option>
+        <option value="$nin">$nin</option>
+    </select>     
+    </div> 
+    <div class="form-row condlist">
+    <label style="width: 150px" for="node-sa-nosqlupdate-input-colvalue"><i class="fa fa-vine"></i> Value</label>
+    <input style="width: 40%" type="text" id="node-sa-nosqlupdate-input-colvalue" placeholder="Value">     
+    <select style="width: 20%" id="node-sa-nosqlupdate-select-valuetype">
+        <option value="str">string</option>
+        <option value="val">value</option>
+    </select>
+    </div> 
+    <div class="form-row fields">
+    <label style="width: 150px" for="node-sa-nosqlupdate-input-colvalue-fields"><i class="fa fa-vine"></i> Value</label>
+    <input style="width: 40%" type="text" id="node-sa-nosqlupdate-input-colvalue-fields" placeholder="Value">     
+    <select style="width: 20%" id="node-sa-nosqlupdate-select-valuetype-fields">
+        <option value="str">string</option>
+        <option value="val">value</option>
+    </select>
+    </div> 
+    <div class="form-row">
+    <a class="btn btn-mini condlist" id="node-sa-nosqlupdate-input-addcondition"><i class="fa fa-plus"></i> Add Condition</a>
+    <a class="btn btn-mini condop" style="opacity: 0; display: none"><i class="fa fa-plus"></i></a>
+    <a class="btn btn-mini fields" id="node-sa-nosqlupdate-input-addfield"><i class="fa fa-plus"></i> Add Field</a>
+    <a id="node-sa-nosqlupdate-warnstr" style = "color: red; display: none"></a>
+    <span style="float: right">
+    <select style="width: 150px; margin-top: -5px" id = "node-sa-nosqlupdate-select-tab">
+    <option value='fields'>Fields</option>
+    <option value='condictions'>Condictions</option>
+    <option value='cond_op'>cond_op</option>    
+    </select>
+    </span>
+    </div>  
+    <div class="form-row node-sa-input-rule-container-row ui-disabled" style="margin-bottom: 0px;">
+        <div id="node-sa-input-rule-container-div" style="box-sizing: border-box; border-radius: 5px; height: 200px; padding: 5px; border: 1px solid #ccc; overflow-y:scroll;">
+            <ol id="node-sa-nosqlupdate-input-rule-container" style=" list-style-type:none; margin: 0;" class="ui-sortable">
+                <li class="condop" id="node-sa-nosqlupdate-input-li-condop" style="background: #fff; margin:0; padding:8px 0px; border-bottom: 1px solid #ccc; display: none;">
+                    <a>Condition operator</a>
+                    <span style="float: right; margin-top: -8px">
+                    <select>
+                    <option value="$or">$or</option>
+                    <option value="$and">$and</option>
+                    <option value="$not">$not</option>
+                    <option value="$nor">$nor</option>
+                    </select>
+                    </span>
+                </li>
+                <table class="condlist" id="node-sa-nosqlupdate-table-condictions" border=1 width=100% style="">
+                    <tr>
+                    <th style="width: 25px;"></th>
+                    <th>ColumnName</th>
+                    <th>Operator</th>
+                    <th>Value</th>
+                    <th>Type</th>
+                </table>
+                <table class="fields" id="node-sa-nosqlupdate-table-fields" border=1 width=100% style="">
+                    <tr>
+                    <th style="width: 25px;"></th>
+                    <th>Field</th>
+                    <th>Value</th>
+                    <th>Type</th>
+                </table>
+            </ol>
+        </div> 
+    </div>          
+</script>
+<script type="text/x-red" data-help-name="NoSQLUpdate">
+    <p>Update data from a existed collection of SUSIAccess 3.1 mongoDB. </p>
+    <p>User set the server ip (<code>msg.url</code>), port (<code>msg.port</code>), username (<code>msg.username</code>) and password (<code>msg.pwd</code>).</p>
+    <p>User can set the collection name, condition operator, conditions and fields under this node or set <code>msg.collectionname</code>, <code>msg.cond_op</code>, <code>msg.conditions</code> and <code>msg.fields</code>. </p>
+    <p>If you set <code>msg.collectionname</code> or <code>msg.cond_op</code>, <code>msg.conditions</code> or <code>msg.fields</code>, the setting of this node will be override. </p>
+</script>

@@ -1,0 +1,174 @@
+<script>
+    $(document).on('click', "#node-sa-input-table .fa-remove", function () {
+        $(this).parent().parent().parent().remove();
+    });
+    function create_option(data) {
+        $('#node-sa-input-fieldtype').change(function () {
+            var value = $(this).val();
+            if (value === 'character')
+                $('.length').show();
+            else
+                $('.length').hide();
+        });
+
+        $('#node-sa-input-add-field').click(function () {
+            var fieldname = $('#node-sa-input-fieldname').val();
+            var fieldtype = $('#node-sa-input-fieldtype').val();
+            var allownull = $('#node-sa-input-allownull').val();
+            var length = $('#node-sa-input-fieldlength').val();
+            if (fieldname === '') {
+                $('#node-sa-warnstr').html('please enter fieldname');
+                $('#node-sa-warnstr').show();
+                return;
+            } else if (fieldtype === 'character' && length === '') {
+                $('#node-sa-warnstr').html('please enter length');
+                $('#node-sa-warnstr').show();
+                return;
+            } else {
+                $('#node-sa-warnstr').hide();
+            }
+
+            if (fieldtype !== 'character') {
+                length = '';
+            }
+            var str = '';
+            str = str + '<tr class="data" name="' + fieldname + '" type="' + fieldtype + '" length="' + length + '" allownull="' + allownull + '" align="center">';
+            str = str + '<td><a class="btn btn-mini" style="margin-left: 5px;"><i class="fa fa-remove"></i></a></td>';
+            str = str + '<td>' + fieldname + '</td>';
+            str = str + '<td>' + fieldtype + '</td>';
+            str = str + '<td>' + length + '</td>';
+            str = str + '<td>' + allownull + '</td>';
+            str = str + '</tr>';
+            $('#node-sa-input-table').append(str);
+        });
+
+        RestoreDataToItem(data);
+    }
+
+    function RestoreDataToItem(data) {
+        if (data === '' || typeof data === 'undefined')
+            return;
+        var str = '';
+        for (var index = 0; index < data.length; index++) {
+            var fieldname = data[index].name;
+            var fieldtype = data[index].type;
+            var allownull = data[index].allownull;
+            var length = data[index].length;
+            str = str + '<tr class="data" name="' + fieldname + '" type="' + fieldtype + '" length="' + length + '" allownull="' + allownull + '" align="center">';
+            str = str + '<td><a class="btn btn-mini" style="margin-left: 5px;"><i class="fa fa-remove"></i></a></td>';
+            str = str + '<td>' + fieldname + '</td>';
+            str = str + '<td>' + fieldtype + '</td>';
+            str = str + '<td>' + length + '</td>';
+            str = str + '<td>' + allownull + '</td>';
+            str = str + '</tr>';
+        }
+        $('#node-sa-input-table').append(str);
+    }
+
+    function SetDataToArray(item) {
+        var dataArray = [];
+        $('#node-sa-input-table .data').each(function () {
+            var name = $(this).attr('name');
+            var type = $(this).attr('type');
+            var length = $(this).attr('length');
+            var allownull = $(this).attr('allownull');
+            var objdata = new Object();
+            objdata.name = name;
+            objdata.type = type;
+            if (type !== 'character')
+                length = '';
+            objdata.length = length;
+            objdata.allownull = allownull;
+            dataArray.push(objdata);
+        });
+        item.data = dataArray;
+    }
+</script>
+<script type="text/javascript">
+    RED.nodes.registerType('SQLCreate', {
+        category: 'RMM31_SQLCtrl',
+        color: 'rgb(157, 181, 195)',
+        defaults: {
+            tablename: {value: ""},
+            data: {value: ""}
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "file.png",
+        label: function () {
+            return this.name || "SQLCreate";
+        },
+        oneditprepare: function () {
+            $('#node-input-name').val(this.name);
+            $('#node-sa-input-tablename').val(this.tablename);
+
+            create_option(this.data);
+        },
+        oneditsave: function () {
+            this.name = $('#node-input-name').val();
+            this.tablename = $('#node-sa-input-tablename').val();
+            SetDataToArray(this);
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="SQLCreate">
+    <div class="form-row">
+    <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Node Name">
+    </div> 
+    <div class="form-row">
+    <label for="node-sa-input-tablename"><i class="fa fa-server"></i> TableName</label>
+    <input type="text" id="node-sa-input-tablename" placeholder="Table Name">        
+    </div>  
+    <div class="form-row">
+    <label for="node-sa-input-fieldname"><i class="fa fa-viacoin"></i> Field Name</label>
+    <input type="text" id="node-sa-input-fieldname" placeholder="Field Name">        
+    </div>
+    <div class="form-row">
+    <label for="node-sa-input-fieldtype"><i class="fa fa-tasks"></i> Field Type</label>
+    <select type="text" id="node-sa-input-fieldtype" style="width:72%;">
+    <option value="character">character</option>
+    <option value="bigint">bigint</option>
+    <option value="double">double</option>
+    <option value="timestamp">timestamp</option>
+    </select>
+    </div>
+    <div class="form-row length">
+    <label for="node-sa-input-fieldlength"><i class="fa fa-viacoin"></i> Length</label>
+    <input type="number" id="node-sa-input-fieldlength" placeholder="Length">        
+    </div>   
+    <div class="form-row">
+    <label for="node-sa-input-allownull"><i class="fa fa-tasks"></i> Allow NULL</label>
+    <select type="text" id="node-sa-input-allownull" style="width:72%;">
+    <option value="true">True</option>
+    <option value="false">False</option>
+    </select>
+    </div>
+    <div class="form-row">
+    <a class="btn btn-mini" id="node-sa-input-add-field"><i class="fa fa-plus"></i> Add</a>
+    <span style="float: right"><a id="node-sa-warnstr" style = "color: red; display: none"></a></span>
+    </div>  
+    <div class="form-row node-sa-input-rule-container-row" style="margin-bottom: 0px;">
+    <div id="node-sa-input-rule-container-div" style="box-sizing: border-box; border-radius: 5px; height: 210px; padding: 5px; border: 1px solid #ccc; overflow-y:scroll;">
+    <ol id="node-sa-input-rule-container" style=" list-style-type:none; margin: 0;" class="ui-sortable">
+    <table id="node-sa-input-table" border=1 width=100%>
+    <tr>
+    <th/>
+    <th>name</th>
+    <th>type</th>
+    <th>length</th>
+    <th>allownull</th>
+    </tr>                    
+    </table>
+    </ol>
+    </div>
+    </div>
+
+</script>
+<script type="text/x-red" data-help-name="SQLCreate">
+    <p>Create a table with the name, length and type of column under SUSIAccess 3.1 postgre database. </p>
+    <p>User set the server ip (<code>msg.url</code>), port (<code>msg.port</code>), username (<code>msg.username</code>) and password (<code>msg.pwd</code>).</p>
+    <p>User can set the table name and table field under this node or set <code>msg.tablename</code> and <code>msg.fields</code>. </p>
+    <p>If you set <code>msg.tablename</code> or <code>msg.fields</code>, the setting of this node will be override. </p>
+</script>

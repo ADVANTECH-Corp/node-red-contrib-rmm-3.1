@@ -1,0 +1,50 @@
+<script type="text/javascript">
+    RED.nodes.registerType('PowerCtrl', {
+        category: 'RMM31_DeviceCtrl',
+        color: 'rgb(157, 161, 195)',
+        defaults: {            
+            deviceid: {value: ""},
+            action: {value: "Reboot"}
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "white-globe.png",
+        label: function () {
+            return this.name || "PowerCtrl";
+        },
+        oneditprepare: function () {
+            $('#node-input-name').val(this.name);            
+        },
+        oneditsave: function () {
+            this.name = $('#node-input-name').val();            
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="PowerCtrl">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Node Name">
+    </div>    
+    <div class="form-row">
+        <label for="node-input-deviceid"><i class="fa fa-sign-in"></i> Device ID</label>
+        <input type="text" id="node-input-deviceid" placeholder="Device ID">
+    </div>
+    <div class="form-row">
+        <label for="node-input-action"><i class="fa fa-tasks"></i> Method</label>
+        <select type="text" id="node-input-action" style="width:72%;">
+            <option value="ON">Power On</option>
+            <option value="Reboot">Reboot</option>
+            <option value="S3">Sleep</option>
+            <option value="S4">Hibernate</option>
+            <option value="S5">Power Off</option>
+        </select>
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="PowerCtrl">
+    <p>Set device to power on, power off, sleep, hibernate, reboot.</p>
+    <p>User set the server ip (<code>msg.url</code>), port (<code>msg.port</code>), username (<code>msg.username</code>) and password (<code>msg.pwd</code>).</p>
+    <p>User can set the device id and power action under this node or set <code>msg.deviceid</code> and <code>msg.action</code>. </p>
+    <p>If you set <code>msg.deviceid</code> and <code>msg.action</code>, the setting of this node will be override. </p>
+</script>

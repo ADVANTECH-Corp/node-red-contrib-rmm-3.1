@@ -1,0 +1,179 @@
+<script>
+    $(document).on('click', "#node-sa-nosqlinsert-table .remove-btn", function () {
+        $(this).parent().parent().remove();
+    });
+    function NoSQLInsert_Option(item) {
+        $('#node-sa-input-add-field').click(function () {
+            var colname = $('#node-sa-input-colname').val();
+            var value = $('#node-sa-input-colvalue').val();
+            var type = $('#node-sa-select-valuetype').val();
+            if (colname === '') {
+                $('#node-sa-warnstr').html('please enter column name');
+                $('#node-sa-warnstr').show();
+                return;
+            } else if (value === '') {
+                $('#node-sa-warnstr').html('please enter column value');
+                $('#node-sa-warnstr').show();
+                return;
+            } else {
+                $('#node-sa-warnstr').hide();
+            }
+
+            switch (type) {
+                case 'str':
+                    break;
+                case 'val':
+                    if (isNaN(parseFloat(value))) {
+                        $('#node-sa-warnstr').html('please enter correct value type');
+                        $('#node-sa-warnstr').show();
+                        return;
+                    }
+                    break;
+            }
+
+            var isDuplicate = false;
+            $('#node-sa-nosqlinsert-table .data').each(function () {
+                var _colname = $(this).attr('name');
+                if (colname === _colname) {
+                    isDuplicate = true;
+                    return;
+                }
+            });
+            if (isDuplicate) {
+                $('#node-sa-warnstr').html('the colume name is duplicate');
+                $('#node-sa-warnstr').show();
+                return;
+            }
+
+            var str = '';
+            str = str + '<tr class="data" name="' + colname + '" value="' + value + '" type="' + type + '" align="center">';
+            str = str + '<td><a class="btn btn-mini remove-btn" style="margin-left: auto;"><i class="fa fa-remove"></i></a></td>';
+            str = str + '<td style="white-space:pre;">' + colname + '</td>';
+            str = str + '<td>' + value + '</td>';
+            switch (type) {
+                case 'str':
+                    str = str + '<td>string</td>';
+                    break;
+                case 'val':
+                    str = str + '<td>value</td>';
+                    break;
+            }
+            str = str + '</tr>';
+            $('#node-sa-nosqlinsert-table').append(str);
+        });
+        NoSQLInsert_restoreFiledData(item);
+    }
+
+    function NoSQLInsert_restoreFiledData(item) {
+        var data = item.data;
+        if (typeof data === 'undefined' || data === '') {
+            return;
+        } else {
+            var str = '';
+            for (var index in data) {
+                var colname = data[index].colname;
+                var value = data[index].value;
+                var type = data[index].type;
+                str = str + '<tr class="data" name="' + colname + '" value="' + value + '" type="' + type + '" align="center">';
+                str = str + '<td><a class="btn btn-mini remove-btn" style="margin-left: auto;"><i class="fa fa-remove"></i></a></td>';
+                str = str + '<td style="white-space:pre;">' + colname + '</td>';
+                str = str + '<td>' + value + '</td>';
+                switch (type) {
+                    case 'str':
+                        str = str + '<td>string</td>';
+                        break;
+                    case 'val':
+                        str = str + '<td>value</td>';
+                        break;
+                }
+                str = str + '</tr>';
+            }
+            $('#node-sa-nosqlinsert-table').append(str);
+        }
+    }
+
+    function NoSQLInsert_setFieldItemData(item) {
+        var dataArray = [];
+        $('#node-sa-nosqlinsert-table .data').each(function () {
+            var colname = $(this).attr('name');
+            var value = $(this).attr('value');
+            var type = $(this).attr('type');
+            var objdata = new Object();
+            objdata.colname = colname;
+            objdata.value = value;
+            objdata.type = type;
+            dataArray.push(objdata);
+        });
+        item.data = dataArray;
+    }
+</script>
+<script type="text/javascript">
+    RED.nodes.registerType('NoSQLInsert', {
+        category: 'RMM31_NoSQLCtrl',
+        color: 'rgb(157, 200, 230)',
+        defaults: {
+            collectionname: {value: ""},
+            data: {value: ""}
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "rbe.png",
+        label: function () {
+            return this.name || "NoSQLInsert";
+        },
+        oneditprepare: function () {
+            $('#node-input-name').val(this.name);
+            NoSQLInsert_Option(this);
+        },
+        oneditsave: function () {
+            this.name = $('#node-input-name').val();
+            NoSQLInsert_setFieldItemData(this);
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="NoSQLInsert">
+    <div class="form-row">
+    <label style="width: 150px" for="node-input-name"><i class="icon-tag"></i> Name</label>
+    <input style="width: 60%" type="text" id="node-input-name" placeholder="Node Name">
+    </div>     
+    <div class="form-row">
+    <label style="width: 150px" for="node-sa-input-tablename"><i class="fa fa-server"></i> Collection Name</label>
+    <input style="width: 60%" type="text" id="node-input-collectionname" placeholder="Collection Name">        
+    </div>  
+    <div class="form-row">
+    <label style="width: 150px" for="node-sa-input-colname"><i class="fa fa-viacoin"></i> Column Name</label>
+    <input style="width: 60%" type="text" id="node-sa-input-colname" placeholder="Column Name">        
+    </div>  
+    <div class="form-row">
+    <label style="width: 150px" for="node-sa-input-colvalue"><i class="fa fa-vine"></i> Value</label>
+    <input style="width: 40%" type="text" id="node-sa-input-colvalue" placeholder="Value"> 
+    <select style="width: 20%" id="node-sa-select-valuetype">
+        <option value="str">string</option>
+        <option value="val">value</option>
+    </select>
+    </div> 
+    <div class="form-row">
+    <a class="btn btn-mini" id="node-sa-input-add-field"><i class="fa fa-plus"></i> Add</a>
+    <span style="float: right"><a id="node-sa-warnstr" style = "color: red; display: none"></a></span>
+    </div>  
+    <div class="form-row node-sa-input-rule-container-row" style="margin-bottom: 0px;">
+    <div id="node-sa-input-rule-container-div" style="box-sizing: border-box; border-radius: 5px; height: 210px; padding: 5px; border: 1px solid #ccc; overflow-y:scroll;">
+    <ol id="node-sa-input-rule-container" style=" list-style-type:none; margin: 0;" class="ui-sortable">    
+    <table id="node-sa-nosqlinsert-table" border=1 width=100%>
+    <tr>
+    <th style="width: 25px;"></th>
+    <th>column name</th>
+    <th>value</th>
+    <th>type</th>
+    </table>
+    </ol>
+    </div>
+    </div>
+</script>
+<script type="text/x-red" data-help-name="NoSQLInsert">
+    <p>Insert data into a collection of SUSIAccess 3.1 mongoDB. </p>
+    <p>User set the server ip (<code>msg.url</code>), port (<code>msg.port</code>), username (<code>msg.username</code>) and password (<code>msg.pwd</code>).</p>
+    <p>User can set the collection name and table field under this node or set <code>msg.collectionname</code> and <code>msg.data</code>. </p>
+    <p>If you set <code>msg.collectionname</code> or <code>msg.data</code>, the setting of this node will be override. </p>
+</script>

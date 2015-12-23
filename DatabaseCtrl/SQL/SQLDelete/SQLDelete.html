@@ -1,0 +1,323 @@
+<script>
+    $(document).on('click', "#node-sa-input-table-condictions .btn", function () {
+        $(this).parent().parent().remove();
+    });
+
+    $(document).on('click', "#node-sa-input-table-orderBy .btn", function () {
+        $(this).parent().parent().remove();
+    });
+
+    $(document).on('change', "#node-sa-input-table-selectFields .checkitem", function () {
+        if ($(this).attr('value') === 'true')
+            $(this).attr('value', 'false');
+        else
+            $(this).attr('value', 'true');
+    });
+
+    function submit(path, method, data, user, password, callback)
+    {
+        $.ajax({
+            cache: false,
+            type: method,
+            url: path,
+            data: data,
+            contentType: 'application/json',
+            dataType: 'text',
+            error: function (xhr, exception)
+            {
+                switch (exception.toString().toLowerCase())
+                {
+                    case "timeout" :
+                        break;
+                    case "error" :
+                        $('#node-sa-warnstr').html('http error').show();
+                        break;
+                }
+                return;
+            },
+            beforeSend: function (xhr)
+            {
+                xhr.setRequestHeader("Authorization", "Basic " + btoa("admin:admin"));
+                xhr.setRequestHeader("Accept", "application/json");
+            },
+            success: function (response)
+            {
+                callback(response);
+            }
+        });
+    }
+
+    function SQLDelete_Option(item) {
+        $('#node-sa-input-getcol').click(function () {
+            var url = $('#node-sa-input-url').val();
+            var port = $('#node-sa-input-port').val();
+            var user = $('#node-sa-input-user').val();
+            var pwd = $('#node-sa-input-pwd').val();
+            var tablename = $('#node-sa-input-tablename').val();
+            if (typeof tablename === 'undefined' || tablename === '') {
+                $('#node-sa-warnstr').html('please enter table name').show();
+                return;
+            }
+            $('#node-sa-warnstr').hide();
+            submit('http://' + url + ':' + port + '/webresources/SQLMgmt/getTableInfo/' + tablename, 'get', '', user, pwd, function (resultstr) {
+                var obj = JSON.parse(resultstr);
+                if (typeof obj['result']['ErrorCode'] === 'undefined') {
+                    SQLDeletefillCondSelectTable(obj);
+                } else {
+                    $('#node-sa-warnstr').html(obj['result']['ErrorCode'] + ' : ' + obj['result']['Description']);
+                    $('#node-sa-warnstr').show();
+                }
+            });
+        });
+
+        $('#node-sa-input-addcond').click(function () {
+            var value = $('#node-sa-input-condvalue').val();
+            var fieldname = $('#node-sa-input-select-cond-name').val();
+            var operator = $('#node-sa-input-select-cond-operator').val();
+            var show_op = '';
+            if (fieldname === null) {
+                alert('please enter fieldname');
+                return;
+            } else if (value === '') {
+                alert('please enter value');
+                return;
+            }
+            if (operator === 'equ') {
+                show_op = '=';
+            } else if (operator === 'notequ') {
+                show_op = '!=';
+            } else if (operator === 'less') {
+                show_op = '<';
+            } else if (operator === 'lessequ') {
+                show_op = '<=';
+            } else if (operator === 'large') {
+                show_op = '>';
+            } else if (operator === 'largeequ') {
+                show_op = '>=';
+            } else {
+                show_op = operator;
+            }
+            var str = str + '<tr align = "center" class="data" fieldname="' + fieldname + '" op = "' + operator + '" value = "' + value + '">';
+            str = str + '<td><a class="btn btn-mini" style="margin-left: 5px;"><i class="fa fa-remove"></i></a></td>';
+            str = str + '<td>' + fieldname + '</td>';
+            str = str + '<td>' + show_op + '</td>';
+            str = str + '<td>' + value + '</td>';
+            str = str + '</tr>';
+            $('#node-sa-input-table-condictions').append(str);
+        });
+
+        $('#node-sa-select-tab').change(function () {
+            var value = $(this).val();
+            switch (value) {
+                case 'cond_op':
+                    $('#node-sa-input-li-condop').show();
+                    $('#node-sa-input-table-condictions').hide();
+                    $('#node-sa-input-div-condictions').hide();
+                    break;
+                case 'condictions':
+                    $('#node-sa-input-li-condop').hide();
+                    $('#node-sa-input-table-condictions').show();
+                    $('#node-sa-input-div-condictions').show();
+                    break;
+            }
+        });
+
+        SQLDelete_restorecond_opData(item);
+        SQLDelete_restoreconds(item);
+    }
+
+    function SQLDelete_restoreconds(item) {
+        if (typeof item.conditions === 'undefined' || item.conditions === '')
+            return;
+        var conditions = item.conditions;
+        var str = '';
+        for (var index = 0; index < conditions.length; index++) {
+            var fieldname = conditions[index].name;
+            var show_op;
+            var operator = conditions[index].op;
+            var value = conditions[index].value;
+            if (operator === 'equ') {
+                show_op = '=';
+            } else if (operator === 'notequ') {
+                show_op = '!=';
+            } else if (operator === 'less') {
+                show_op = '<';
+            } else if (operator === 'lessequ') {
+                show_op = '<=';
+            } else if (operator === 'large') {
+                show_op = '>';
+            } else if (operator === 'largeequ') {
+                show_op = '>=';
+            } else {
+                show_op = operator;
+            }
+            str = str + '<tr align = "center" class="data" fieldname="' + fieldname + '" op = "' + operator + '" value = "' + value + '">';
+            str = str + '<td><a class="btn btn-mini" style="margin-left: 5px;"><i class="fa fa-remove"></i></a></td>';
+            str = str + '<td>' + fieldname + '</td>';
+            str = str + '<td>' + show_op + '</td>';
+            str = str + '<td>' + value + '</td>';
+            str = str + '</tr>';
+        }
+        $('#node-sa-input-table-condictions tr').has('td').remove();
+        $('#node-sa-input-table-condictions').append(str);
+    }
+    function SQLDelete_restorecond_opData(item) {
+        if (typeof item.cond_op === 'undefined' || item.cond_op === '')
+            return;
+        $('#node-sa-input-li-condop select').val(item.cond_op);
+    }
+
+    function SQLDeletefillCondSelectTable(obj) {
+        var items = obj['result']['item'];
+        var str = '';
+        for (var index = 0; index < items.length; index++) {
+            var fieldName = items[index]['fieldName'];
+
+            str = str + '<option value="' + fieldName + '">' + fieldName + '</option>';
+        }
+        $('#node-sa-input-select-cond-name').find('option').remove();
+        $('#node-sa-input-select-cond-name').append(str);
+    }
+
+    function SQLDelete_set2Data(item) {
+        SQLDelete_storeCondOp(item);
+        SQLDelete_storeConds(item);
+    }
+
+    function SQLDelete_storeConds(item) {
+        var condsArray = [];
+        $('#node-sa-input-table-condictions .data').each(function () {
+            var name = $(this).attr('fieldname');
+            var op = $(this).attr('op');
+            var value = $(this).attr('value');
+            var objdata = new Object();
+            objdata.name = name;
+            objdata.op = op;
+            objdata.value = value;
+            condsArray.push(objdata);
+        });
+        item.conditions = condsArray;
+    }
+    function SQLDelete_storeCondOp(item) {
+        item.cond_op = $('#node-sa-input-li-condop select').val();
+    }
+</script>
+<script type="text/javascript">
+    RED.nodes.registerType('SQLDelete', {
+        category: 'RMM31_SQLCtrl',
+        color: 'rgb(157, 181, 195)',
+        defaults: {
+            url: {value: "localhost"},
+            port: {value: "8080"},            
+            tablename: {value: ""},
+            cond_op: {value: ""},
+            conditions: {value: ""}
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "file.png",
+        label: function () {
+            return this.name || "SQLDelete";
+        },
+        oneditprepare: function () {
+            $('#node-input-name').val(this.name);
+            $('#node-sa-input-url').val(this.url);
+            $('#node-sa-input-port').val(this.port);
+            $('#node-sa-input-tablename').val(this.tablename);
+            SQLDelete_Option(this);
+        },
+        oneditsave: function () {
+            this.name = $('#node-input-name').val();
+            this.url = $('#node-sa-input-url').val();
+            this.port = $('#node-sa-input-port').val();
+            this.tablename = $('#node-sa-input-tablename').val();
+            SQLDelete_set2Data(this);
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="SQLDelete">
+    <div class="form-row">
+    <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Node Name">
+    </div> 
+    <div class="form-row">
+    <label for="node-sa-input-url"><i class="fa fa-globe"></i> URL</label>
+    <input type="text" id="node-sa-input-url" placeholder="http://" style = "width: 40%">
+    <input type="text" id="node-sa-input-port" placeholder="port" style="width: 70px">
+    </div>
+    <div class="form-row">
+    <label for="node-sa-input-user"><i class="fa fa-user"></i> Username</label>
+    <input type="text" id="node-sa-input-user" placeholder="User Name">
+    </div>
+    <div class="form-row">
+    <label for="node-sa-input-password"><i class="fa fa-lock"></i> Password</label>
+    <input type="password" id="node-sa-input-pwd" placeholder="Password">
+    </div>
+    <div class="form-row">
+    <label for="node-sa-input-tablename"><i class="fa fa-server"></i> TableName</label>
+    <input type="text" id="node-sa-input-tablename" placeholder="Table Name">        
+    </div>  
+    <div class="form-row">
+    <a class="btn btn-mini" id="node-sa-input-getcol"><i class="fa fa-plus"></i> Get Columns</a>
+    <a id="node-sa-warnstr" style = "color: red; display: none"></a>
+    <span style="float: right">
+    <select style="width: 150px; margin-top: -5px" id = "node-sa-select-tab">
+    <option value='condictions'>Condictions</option>
+    <option value='cond_op'>cond_op</option>    
+    </select>
+    </span>
+    </div>  
+    <div class="form-row node-sa-input-rule-container-row ui-disabled" style="margin-bottom: 0px;">
+        <div id="node-sa-input-rule-container-div" style="box-sizing: border-box; border-radius: 5px; height: 200px; padding: 5px; border: 1px solid #ccc; overflow-y:scroll;">
+            <ol id="node-sa-input-rule-container" style=" list-style-type:none; margin: 0;" class="ui-sortable">
+                <li id="node-sa-input-li-condop" style="background: #fff; margin:0; padding:8px 0px; border-bottom: 1px solid #ccc; display: none;">
+                    <a>Condition operator</a>
+                    <span style="float: right; margin-top: -8px">
+                    <select>
+                    <option value="AND">AND</option>
+                    <option value="OR">OR</option>
+                    </select>
+                    </span>
+                </li>
+                <table id="node-sa-input-table-condictions" border=1 width=100% style="">
+                    <tr>
+                    <th/>
+                    <th>FieldName</th>
+                    <th>Operator</th>
+                    <th>Value</th>
+                </table> 
+            </ol>
+        </div> 
+    </div>        
+    <div class="form-row" id="node-sa-input-div-condictions" style="margin-top: 3px">
+    <select style="width: 100px" id="node-sa-input-select-cond-name">
+    </select>
+    <select style="width: 100px" id = "node-sa-input-select-cond-operator">
+    <option value="equ">=</option>
+    <option value="notequ">!=</option>
+    <option value="less">&lt;</option>
+    <option value="lessequ">&lt;=</option>
+    <option value="large">&gt;</option>
+    <option value="largeequ">&gt;=</option>
+    <option value="BETWEEN">BETWEEN</option>
+    <option value="LIKE">LIKE</option>
+    <option value="NOT LIKE">NOT LIKE</option>
+    <option value="ILIKE">ILIKE</option>
+    <option value="NOT ILIKE">NOT ILIKE</option>
+    <option value="IN">IN</option>
+    <option value="NOT IN">NOT IN</option>
+    <option value="NOT BETWEEN">NOT BETWEEN</option>
+    <option value="IS NULL">IS NULL</option>
+    <option value="IS NOT NULL">IS NOT NULL</option>
+    </select>
+    <input id="node-sa-input-condvalue" style="width: 100px" type="text" placeholder="Value">
+    <span style="float: right; margin-top: 5px"><a class="btn btn-mini" id="node-sa-input-addcond"><i class="fa fa-plus"></i> Add Condition</a></span>
+    </div>    
+</script>
+<script type="text/x-red" data-help-name="SQLDelete">
+    <p>Delete data from a existed table of SUSIAccess 3.1 postgre database. </p>
+    <p>User set the server ip (<code>msg.url</code>), port (<code>msg.port</code>), username (<code>msg.username</code>) and password (<code>msg.pwd</code>).</p>
+    <p>User can set the table name, condition operator and conditions under this node or set <code>msg.tablename</code>, <code>msg.cond_op</code> and <code>msg.conditions</code>. </p>
+    <p>If you set <code>msg.tablename</code> or <code>msg.cond_op</code> or <code>msg.conditions</code>, the setting of this node will be override. </p>
+</script>

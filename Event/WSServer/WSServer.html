@@ -1,0 +1,32 @@
+<script type="text/javascript">
+    RED.nodes.registerType('WSServer', {
+        category: 'RMM31_Event',
+        color: 'rgb(230, 224, 248)',
+        defaults: {
+        },
+        inputs: 1,
+        outputs: 0,
+        align: 'right',
+        icon: "arrow-in.png",
+        label: function () {
+            return this.name || "WSServer";
+        },
+        oneditprepare: function () {
+            $('#node-input-name').val(this.name);
+        },
+        oneditsave: function () {
+            this.name = $('#node-input-name').val();
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="WSServer">
+    <div class="form-row">
+    <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Node Name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="WSServer">
+    <p>Provide a websocket server for port 9876. </p>    
+</script>

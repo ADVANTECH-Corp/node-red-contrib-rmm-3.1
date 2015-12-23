@@ -1,0 +1,32 @@
+<script type="text/javascript">
+    RED.nodes.registerType('DeviceGet', {
+        category: 'General',
+        color: 'rgb(230, 161, 5)',
+        defaults: {
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "subflow.png",
+        label: function () {
+            return this.name || "DeviceGet";
+        },
+        oneditprepare: function () {
+            $('#node-input-name').val(this.name);
+        },
+        oneditsave: function () {
+            this.name = $('#node-input-name').val();            
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="DeviceGet">
+    <div class="form-row">
+    <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Node Name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="DeviceGet">
+    <p>Retrieve device information list from SUSIAccess 3.1 server. </p>
+    <p>User set the server ip (<code>msg.url</code>), port (<code>msg.port</code>), username (<code>msg.username</code>) and password (<code>msg.pwd</code>).</p>
+</script>

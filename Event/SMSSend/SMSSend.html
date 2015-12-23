@@ -1,0 +1,74 @@
+<script>
+</script>
+<script type="text/javascript">
+    RED.nodes.registerType('SMSSend', {
+        category: 'RMM31_Event',
+        color: 'rgb(230, 224, 248)',
+        defaults: {            
+            smsapi: {value: ""},
+            /*smsaccount: {value: ""},
+            smspwd: {value: ""},*/
+            smsencodestr: {value:""},
+            smsphone: {value: ""},
+            smscontent: {value: ""}
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "arrow-in.png",
+        label: function () {
+            return this.name || "SMSSend";
+        },
+        oneditprepare: function () {
+            $('#node-input-name').val(this.name);            
+            $('#node-sa-input-apiname').val(this.smsapi);
+            /*$('#node-sa-input-smsaccount').val(this.smsaccount);
+            $('#node-sa-input-smspwd').val(this.smspwd);*/
+            $('#node-sa-input-phone').val(this.smsphone);
+            $('#node-sa-input-smscontent').val(this.smscontent);
+        },
+        oneditsave: function () {
+            this.name = $('#node-input-name').val();            
+            this.smsapi = $('#node-sa-input-apiname').val();
+            /*this.smsaccount = $('#node-sa-input-smsaccount').val();
+            this.smspwd = $('#node-sa-input-smspwd').val();*/
+            this.smsphone = $('#node-sa-input-phone').val();
+            this.smscontent = $('#node-sa-input-smscontent').val();
+            var username = $('#node-sa-input-smsaccount').val();
+            var pwd = $('#node-sa-input-smspwd').val();
+            this.smsencodestr = btoa(username + '$' + pwd);
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="SMSSend">
+    <div class="form-row">
+    <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Node Name">
+    </div>    
+    <div class="form-row">
+    <label for="node-sa-input-apiname"><i class="fa fa-globe"></i> API ID</label>
+    <input type="text" id="node-sa-input-apiname" placeholder="API ID">
+    </div>    
+    <div class="form-row">
+    <label for="node-sa-input-smsaccount"><i class="fa fa-user"></i> Account</label>
+    <input type="text" id="node-sa-input-smsaccount" placeholder="SMS Account Name">
+    </div> 
+    <div class="form-row">
+    <label for="node-sa-input-smspwd"><i class="fa fa-lock"></i> Password</label>
+    <input type="password" id="node-sa-input-smspwd" placeholder="SMS Password">
+    </div> 
+    <div class="form-row">
+    <label for="node-sa-input-phone"><i class="fa fa-phone"></i> Phone</label>
+    <input type="text" id="node-sa-input-phone" placeholder="Phone">
+    </div>     
+    <div class="form-row node-input-rule-container-row" style="margin-bottom: 0px;">
+    <textarea placeholder="Please enter the sms content here" id="node-sa-input-smscontent" style="box-sizing: border-box; border-radius: 5px; height: 150px; padding: 5px; border: 1px solid #ccc; overflow:auto; resize:none; width:100%;"></textarea>
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="SMSSend">
+    <p>Send the SMS by using clickatell.</p>
+    <p>User set the server ip (<code>msg.url</code>), port (<code>msg.port</code>), username (<code>msg.username</code>) and password (<code>msg.pwd</code>).</p>
+    <p>User can set the api, account, password of clickatell, phone and content under this node or set <code>msg.smsapi</code>, <code>msg.smsaccount</code>, <code>msg.smspwd</code>, <code>msg.smsphone</code> and <code>msg.smscontent</code>. </p>
+    <p>If you set <code>msg.smsapi</code>, <code>msg.smsaccount</code>, <code>msg.smspwd</code>, <code>msg.smsphone</code> and <code>msg.smscontent</code>, the setting of this node will be override. </p>
+</script>

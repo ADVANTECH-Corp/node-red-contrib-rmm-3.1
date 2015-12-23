@@ -1,0 +1,233 @@
+<script>
+    function submit(path, method, data, user, password, callback)
+    {
+        $.ajax({
+            cache: false,
+            type: method,
+            url: path,
+            data: data,
+            contentType: 'application/json',
+            dataType: 'text',
+            error: function (xhr, exception)
+            {
+                switch (exception.toString().toLowerCase())
+                {
+                    case "timeout" :
+                        break;
+                    case "error" :
+                        break;
+                }
+                return;
+            },
+            beforeSend: function (xhr)
+            {
+                xhr.setRequestHeader("Authorization", "Basic " + btoa("admin:admin"));
+                xhr.setRequestHeader("Accept", "application/json");
+            },
+            success: function (response)
+            {
+                callback(response);
+            }
+        });
+    }
+
+    function abc()
+    {
+        
+    }
+    
+    function SUSICtrlSet_option(mainItem)
+    {        
+        if (mainItem.sensorid === '')                    
+            $('.sensmaorid_select').hide();
+        
+        $('#node-sa-input-getsensorid').click(function () {
+            var url = $('#node-sa-input-url').val();
+            var port = $('#node-sa-input-port').val();
+            var user = $('#node-sa-input-user').val();
+            var pwd = $('#node-sa-input-pwd').val();
+            var did = $('#node-sa-input-deviceid').val();
+            
+            submit('http://' + url + ':' + port + '/webresources/DeviceCtl/getSensorID', 'post', getSensorIDData(did), user, pwd, getSensorIDcallback);
+        });
+
+        $('#node-sa-value-type').change(function () {
+            setInputValItem(this);
+        });
+        
+        setInputValItem($('#node-sa-value-type'));
+    }
+
+    function setInputValItem(item)
+    {
+        var value = $(item).val();
+        switch (value)
+        {
+            case 'v':
+                $('#node-sa-value-bv').hide();
+                $('#node-sa-input-setvalue').show();
+                break;
+            case 'bv':
+                $('#node-sa-value-bv').show();
+                $('#node-sa-input-setvalue').hide();
+                break;
+            case 'sv':
+                $('#node-sa-value-bv').hide();
+                $('#node-sa-input-setvalue').show();
+                break;
+        }
+    }
+
+    function getSensorIDData(did)
+    {
+        var obj = new Object();
+        obj.agentId = did;
+        obj.handler = 'SUSIControl';
+        var objreq = new Object();
+        objreq.request = obj;
+        return JSON.stringify(objreq);
+    }
+
+    function getSensorIDcallback(xml_str)
+    {
+        $('#node-sa-sensorid-select').find('option').remove();
+        var obj = JSON.parse(xml_str);
+        if (typeof obj['result']['ErrorCode'] === 'undefined')
+        {
+            var str = '';
+            for (var i = 0; i < obj['result']['itemList']['item'].length; i++)
+                str = str + '<option value="' + obj['result']['itemList']['item'][i]['sensorID'] + '">' + obj['result']['itemList']['item'][i]['sensorID'] + '</option>';
+            $('#node-sa-sensorid-select').append(str);
+            $('#node-sa-errormsg').hide();
+            $('.sensorid_select').show();
+        }
+        else
+        {
+            $('#node-sa-errormsg').html(obj['result']['ErrorCode'] + ' : ' + obj['result']['Description']);
+            $('#node-sa-errormsg').show();
+            $('.sensorid_select').hide();
+        }
+        $('.sensmaorid_select').show();
+        $('#node-sa-selected-sensorid').hide();
+    }
+</script>
+<script type="text/javascript">
+    RED.nodes.registerType('SUSICtrlSet', {
+        category: 'RMM31_DeviceCtrl',
+        color: 'rgb(157, 161, 195)',
+        defaults: {
+            url: {value: "localhost"},
+            port: {value: "8080"},
+            username: {value: ""},
+           /* pwd: {value: ""},*/
+            deviceid: {value: ""},
+            sensorid: {value: ""},
+            setvaluetype: {value: "v"},
+            setvalue: {value: ""}
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "white-globe.png",
+        label: function () {
+            return this.name || "SUSICtrlSet";
+        },
+        oneditprepare: function () {
+            $('#node-input-name').val(this.name);
+            $('#node-sa-input-url').val(this.url);
+            $('#node-sa-input-port').val(this.port);
+            $('#node-sa-input-user').val(this.username);
+            //$('#node-sa-input-pwd').val(this.pwd);
+            $('#node-sa-input-deviceid').val(this.deviceid);
+            $('#node-sa-selected-sensorid').html(this.sensorid).show();
+            $('#node-sa-value-type').val(this.setvaluetype);
+            switch(this.setvaluetype)
+            {
+                case 'v':
+                    $('#node-sa-input-setvalue').val(this.setvalue);
+                    break;
+                case 'bv':
+                    $('#node-sa-value-bv').val(this.setvalue);
+                    break;
+                case 'sv':
+                    $('#node-sa-input-setvalue').val(this.setvalue);
+                    break;
+            }  
+            
+            SUSICtrlSet_option(this);
+        },
+        oneditsave: function () {
+            this.name = $('#node-input-name').val();
+            this.url = $('#node-sa-input-url').val();
+            this.port = $('#node-sa-input-port').val();
+            this.username = $('#node-sa-input-user').val();
+            //this.pwd = $('#node-sa-input-pwd').val();
+            this.deviceid = $('#node-sa-input-deviceid').val();
+            this.sensorid = $('#node-sa-sensorid-select').val() || $('#node-sa-selected-sensorid').html();
+            this.setvaluetype = $('#node-sa-value-type').val();
+            switch(this.setvaluetype)
+            {
+                case 'v':
+                    this.setvalue = $('#node-sa-input-setvalue').val();
+                    break;
+                case 'bv':
+                    this.setvalue = $('#node-sa-value-bv').val();
+                    break;
+                case 'sv':
+                    this.setvalue = $('#node-sa-input-setvalue').val();
+                    break;
+            }            
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="SUSICtrlSet">
+    <div class="form-row">
+    <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Node Name">
+    </div>
+    <div class="form-row">
+    <label for="node-sa-input-url"><i class="fa fa-globe"></i> URL</label>
+    <input type="text" id="node-sa-input-url" placeholder="http://" style = "width: 40%">
+    <input type="text" id="node-sa-input-port" placeholder="port" style="width: 70px">
+    </div>
+    <div class="form-row">
+    <label for="node-sa-input-user"><i class="fa fa-user"></i> Username</label>
+    <input type="text" id="node-sa-input-user" placeholder="User Name">
+    </div>
+    <div class="form-row">
+    <label for="node-sa-input-password"><i class="fa fa-lock"></i> Password</label>
+    <input type="password" id="node-sa-input-pwd" placeholder="Password">
+    </div>
+    <div class="form-row">
+    <label for="node-sa-input-deviceid"><i class="fa fa-sign-in"></i> Device ID</label>
+    <input type="text" id="node-sa-input-deviceid" placeholder="Device ID" style="width: 50%">
+    <a id="node-sa-input-getsensorid" class="btn"><i class="fa fa-server"></i></a>
+    </div>    
+    <div class="form-row sensmaorid_select">
+        <label for="node-sa-sensorid-select" class = "sensorid_select"><i class="fa fa-server"></i> Sensor ID</label>
+        <select id="node-sa-sensorid-select" class = "sensorid_select" style="display: none; width: 70%">        
+        </select>   
+        <a id="node-sa-selected-sensorid" style="display: none;"></i></a>
+        <a id="node-sa-errormsg" style="color: red; display: none;"></i></a>
+    </div>
+    <div class="form-row">
+        <label for="node-sa-value-type"><i class="fa fa-server"></i> Set Value</label>
+        <select id="node-sa-value-type" style="width: 20%">   
+            <option value = "v">value</option>
+            <option value = "bv">bool</option>
+            <option value = "sv">string</option>
+        </select>   
+        <input type="text" id="node-sa-input-setvalue" placeholder="Set Value" style="width: 50%">
+        <select id="node-sa-value-bv" style="width: 50%">   
+            <option value = "1">True</option>
+            <option value = "0">False</option>
+        </select>   
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="SUSICtrlSet">
+    <p>Set SUSIControl value.</p>
+    <p>User set the server ip (<code>msg.url</code>), port (<code>msg.port</code>), username (<code>msg.username</code>) and password (<code>msg.pwd</code>).</p>
+    <p>User can set the device id, sensorid, value and type under this node or set <code>msg.deviceid</code>, <code>msg.sensorid</code>, <code>msg.setvalue</code> and <code>msg.setvaluetype</code>. </p>
+    <p>If you set <code>msg.deviceid</code>, <code>msg.sensorid</code>, <code>msg.setvalue</code> and <code>msg.setvaluetype</code>, the setting of this node will be override. </p>
+</script>
