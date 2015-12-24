@@ -1,6 +1,6 @@
 module.exports = function (RED) {
     var WebSocketServer = require('ws').Server;
-    var wss = new WebSocketServer({port: 9876,host: '0.0.0.0'});
+    var wss = new WebSocketServer({port: 9871,host: '0.0.0.0'});
     wss.on('connection', function (ws) {
         ws.on('message', function (message) {
             console.log('received: %s', message);
