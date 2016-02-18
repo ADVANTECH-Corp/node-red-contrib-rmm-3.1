@@ -41,6 +41,7 @@ LongPollingJSFun.submit = function (url, port, path, method, username, pwd, json
             str += chunk;
         });
         response.on('end', function () {
+//            console.log(str)
             res_success(str);
         });
     }).on('error', function (error) {
@@ -115,12 +116,19 @@ module.exports = function (RED) {
         LongPollingJSFun.submit(url, port, '/webresources/EventMgmt/long-polling/', 'post', username, pwd, LongPollingJSFun.getjsoncontentData(), function (res_success) {
             try {
                 var obj = JSON.parse(res_success);
-                var length = parseInt(obj['result']['item'].length);
-                for (var index = 0; index < length; index++) {
-                    msg.payload = obj['result']['item'][index];
-                    node.send(msg);
-                    LongPollingJSFun.eventid = obj['result']['item'][index]['eventID'];
-                }
+                var totalsize = parseInt(obj['result']['totalsize']);
+                if(totalsize === 1){
+                     msg.payload = obj['result']['item'];
+                     node.send(msg);
+                    LongPollingJSFun.eventid = obj['result']['item']['eventID'];
+                }else{
+                    var length = parseInt(obj['result']['item'].length);
+                    for (var index = 0; index < length; index++) {
+                        msg.payload = obj['result']['item'][index];
+                        node.send(msg);
+                        LongPollingJSFun.eventid = obj['result']['item'][index]['eventID'];
+                    }
+                }                
             } catch (e) {
             }
             
