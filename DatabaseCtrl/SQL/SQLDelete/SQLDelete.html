@@ -37,7 +37,7 @@
             },
             beforeSend: function (xhr)
             {
-                xhr.setRequestHeader("Authorization", "Basic " + btoa("admin:admin"));
+                xhr.setRequestHeader("Authorization", "Basic " + btoa(user + ':' + password));
                 xhr.setRequestHeader("Accept", "application/json");
             },
             success: function (response)
