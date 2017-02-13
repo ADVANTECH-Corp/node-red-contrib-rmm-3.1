@@ -63,7 +63,7 @@ NoSQLQueryJSFun.getjsoncontentData = function (config) {
     }
     var objmatch = new Object();    
     for (var index in matchnames) {
-		var objoperator = new Object();
+	    var objoperator = new Object();
         var matchname = matchnames[index].matchname;
         var operator = matchnames[index].operator;
         var value = matchnames[index].value;
